@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import {
   Smartphone,
@@ -10,12 +11,14 @@ import {
   BellRing,
   ShieldCheck,
   ArrowRight,
+  ImageIcon,
 } from "lucide-react";
 import { Container } from "@/components/layout/container";
 import { Section } from "@/components/layout/section";
 import { Button } from "@/components/ui/button";
 import { TriageBadge } from "@/components/common/triage-badge";
 import { DataField } from "@/components/common/data-field";
+import { SectionHeading } from "@/components/marketing/section-heading";
 import { CtaBand } from "@/components/marketing/cta-band";
 import { fadeInUp, sectionReveal, staggerContainer } from "@/lib/motion";
 
@@ -45,9 +48,9 @@ const STEPS = [
 export function HomeContent() {
   return (
     <>
-      {/* hero — above the fold, visible without JS; no entrance gating */}
+      {/* hero — text left / media right; above the fold, visible without JS */}
       <section className="relative overflow-hidden border-b border-border-brand bg-[linear-gradient(180deg,#e6f7f9_0%,#f0fdfa_38%,var(--background)_100%)]">
-        <Container className="grid gap-12 py-20 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:py-28">
+        <Container className="grid gap-12 py-20 lg:grid-cols-[1fr_1.05fr] lg:items-center lg:py-28">
           <div>
             <span className="inline-flex items-center gap-2 rounded-full border border-border-brand bg-primary-subtle px-3 py-1 font-mono text-xs font-medium text-primary-subtle-foreground">
               <span className="size-1.5 rounded-full bg-primary" />
@@ -81,13 +84,57 @@ export function HomeContent() {
             </p>
           </div>
 
-          {/* product moment: the triage summary the doctor sees */}
-          <div className="rounded-[--radius-lg] border border-border bg-surface p-5 shadow-lg">
+          {/* media panel + compact floating card */}
+          <div className="relative lg:pb-10">
+            {/* Drop the hero image at public/media/hero.jpg (or ask for a different name). */}
+            <div className="relative aspect-[4/3] overflow-hidden rounded-[--radius-xl] border border-border-brand bg-surface-muted sm:aspect-square">
+              <span className="absolute inset-0 grid place-items-center text-muted-foreground">
+                <ImageIcon className="size-8" strokeWidth={1.5} aria-hidden />
+              </span>
+              <Image
+                src="/media/hero.jpg"
+                alt="A patient completes a guided eye self-test on their phone, then meets an ophthalmologist on a video call"
+                fill
+                sizes="(min-width: 1024px) 45vw, 100vw"
+                className="object-cover"
+                priority
+              />
+            </div>
+
+            {/* compact triage cue — full detail is in the section below */}
+            <div className="mt-4 flex w-fit flex-col items-start gap-2 rounded-[--radius-lg] border border-border bg-surface p-4 shadow-lg lg:absolute lg:-bottom-4 lg:-left-6 lg:mt-0">
+              <TriageBadge state="review" />
+              <div>
+                <p className="text-sm font-medium text-heading">R. Mehta · 41</p>
+                <p className="text-xs text-muted-foreground">
+                  Blurred vision, 4 days
+                </p>
+              </div>
+              <Link
+                href="#triage"
+                className="text-xs font-medium text-primary hover:underline"
+              >
+                See full triage →
+              </Link>
+            </div>
+          </div>
+        </Container>
+      </section>
+
+      {/* the triage summary the doctor sees */}
+      <Section id="triage" className="scroll-mt-24">
+        <Container>
+          <SectionHeading
+            eyebrow="The product moment"
+            title="What your ophthalmologist sees"
+            lead="Your self-test becomes a structured triage summary the doctor opens the consult with — instead of starting cold."
+          />
+          <div className="mt-8 max-w-2xl rounded-[--radius-lg] border border-border bg-surface p-6 shadow-sm">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h2 className="font-heading text-base font-semibold text-heading">
+                <h3 className="font-heading text-base font-semibold text-heading">
                   Pre-consult triage summary
-                </h2>
+                </h3>
                 <p className="mt-0.5 text-sm text-muted-foreground">
                   R. Mehta · 41 · blurred vision, 4 days
                 </p>
@@ -106,7 +153,7 @@ export function HomeContent() {
             </ul>
           </div>
         </Container>
-      </section>
+      </Section>
 
       {/* how it works */}
       <Section>
