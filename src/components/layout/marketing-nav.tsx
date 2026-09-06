@@ -45,7 +45,12 @@ export function MarketingNav() {
   }, []);
 
   return (
-    <div className="sticky top-0 z-50 w-full px-[5px] pt-[5px]">
+    <div
+      className={cn(
+        "sticky top-0 z-50 w-full px-[5px] pt-[5px] transition-[background-color,backdrop-filter,padding] duration-300",
+        floating && "bg-background/75 pb-2.5 [backdrop-filter:blur(8px)]",
+      )}
+    >
       {/* desktop */}
       <nav
         aria-label="Primary"
@@ -54,7 +59,7 @@ export function MarketingNav() {
           "mx-auto hidden w-full border border-border md:block",
           TRANSITION,
           floating
-            ? "mt-2 max-w-[820px] rounded-full border-transparent bg-surface/80 [backdrop-filter:blur(10px)]"
+            ? "mt-2 max-w-[820px] rounded-full border-transparent bg-surface"
             : "mt-0 max-w-none rounded-[28px] bg-surface",
         )}
       >
@@ -96,7 +101,7 @@ export function MarketingNav() {
           "relative mx-auto flex w-full items-center justify-between border border-border px-4 py-2.5 md:hidden",
           TRANSITION,
           floating
-            ? "mt-2 rounded-3xl border-transparent bg-surface/90 [backdrop-filter:blur(10px)]"
+            ? "mt-2 rounded-3xl border-transparent bg-surface"
             : "mt-0 rounded-2xl bg-surface",
         )}
       >
