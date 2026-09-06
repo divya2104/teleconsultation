@@ -3,7 +3,10 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { PageHeader } from "@/components/layout/page-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PagePlaceholder } from "@/components/common/page-placeholder";
+import { DoctorsTab } from "@/components/admin/doctors-tab";
+import { BookingsTab } from "@/components/admin/bookings-tab";
+import { PaymentsTab } from "@/components/admin/payments-tab";
+import { AnalyticsTab } from "@/components/admin/analytics-tab";
 
 const TABS = ["doctors", "bookings", "payments", "analytics"] as const;
 type Tab = (typeof TABS)[number];
@@ -30,16 +33,16 @@ export function AdminConsole() {
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
         </TabsList>
         <TabsContent value="doctors" className="pt-6">
-          <PagePlaceholder title="Doctor verification queue" note="Review registration number + credentials in a Sheet. Step 5." />
+          <DoctorsTab />
         </TabsContent>
         <TabsContent value="bookings" className="pt-6">
-          <PagePlaceholder title="All bookings" note="Filters + drill-in Sheet." />
+          <BookingsTab />
         </TabsContent>
         <TabsContent value="payments" className="pt-6">
-          <PagePlaceholder title="Payments & refunds" note="Transactions, gateway refs, refund with confirm." />
+          <PaymentsTab />
         </TabsContent>
         <TabsContent value="analytics" className="pt-6">
-          <PagePlaceholder title="Analytics" note="KPI tiles + charts for the spec §12 metrics." />
+          <AnalyticsTab />
         </TabsContent>
       </Tabs>
     </div>
