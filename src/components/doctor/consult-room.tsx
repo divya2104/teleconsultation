@@ -6,16 +6,8 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import {
-  Mic,
-  MicOff,
-  VideoOff,
-  Video as VideoIcon,
-  PhoneOff,
-  Plus,
-  Trash2,
-  ImageIcon,
-} from "lucide-react";
+import { Plus, Trash2, ImageIcon } from "lucide-react";
+import { CallStage } from "@/components/consult/call-stage";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -24,7 +16,6 @@ import { TriageBadge } from "@/components/common/triage-badge";
 import { DataField } from "@/components/common/data-field";
 import { EmergencyBanner } from "@/components/common/emergency-banner";
 import { getTriage } from "@/lib/mock/doctor";
-import { cn } from "@/lib/utils";
 
 const rxSchema = z.object({
   diagnosis: z.string().min(3, "Enter a diagnosis"),
@@ -44,8 +35,6 @@ type RxForm = z.infer<typeof rxSchema>;
 export function ConsultRoom({ id }: { id: string }) {
   const router = useRouter();
   const triage = getTriage(id);
-  const [mic, setMic] = useState(true);
-  const [cam, setCam] = useState(true);
   const [issued, setIssued] = useState(false);
 
   const form = useForm<RxForm>({
@@ -69,46 +58,10 @@ export function ConsultRoom({ id }: { id: string }) {
     <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
       {/* left: call + prescription */}
       <div className="flex flex-col gap-6">
-        {/* call area */}
-        <div className="overflow-hidden rounded-[--radius-lg] border border-border bg-slate-900">
-          <div className="relative flex aspect-video items-center justify-center bg-[radial-gradient(circle_at_50%_40%,#1e293b,#0f172a)]">
-            <p className="font-mono text-xs text-slate-400">
-              {cam ? "Patient video" : "Camera off"}
-            </p>
-            <div className="absolute bottom-3 right-3 grid h-20 w-32 place-items-center rounded-[--radius-sm] border border-slate-700 bg-slate-800 font-mono text-[10px] text-slate-500">
-              You
-            </div>
-          </div>
-          <div className="flex items-center justify-center gap-2 bg-slate-900 p-3">
-            <button
-              onClick={() => setMic((m) => !m)}
-              className={cn(
-                "grid size-10 place-items-center rounded-full text-slate-200",
-                mic ? "bg-slate-700 hover:bg-slate-600" : "bg-destructive",
-              )}
-              aria-label={mic ? "Mute" : "Unmute"}
-            >
-              {mic ? <Mic className="size-4" /> : <MicOff className="size-4" />}
-            </button>
-            <button
-              onClick={() => setCam((c) => !c)}
-              className={cn(
-                "grid size-10 place-items-center rounded-full text-slate-200",
-                cam ? "bg-slate-700 hover:bg-slate-600" : "bg-destructive",
-              )}
-              aria-label={cam ? "Turn camera off" : "Turn camera on"}
-            >
-              {cam ? <VideoIcon className="size-4" /> : <VideoOff className="size-4" />}
-            </button>
-            <button
-              onClick={() => router.push("/doctor/dashboard")}
-              className="grid size-10 place-items-center rounded-full bg-destructive text-white"
-              aria-label="Leave call"
-            >
-              <PhoneOff className="size-4" />
-            </button>
-          </div>
-        </div>
+        <CallStage
+          mainLabel="Patient video"
+          onLeave={() => router.push("/doctor/dashboard")}
+        />
 
         {/* prescription form / wrap-up */}
         {issued ? (
