@@ -1,0 +1,262 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ============================================================
+   ClearSight — "Calm Care" tokens (Step 1). Light-only for v1;
+   .dark is a rough inversion, not yet QA'd.
+   ============================================================ */
+
+@theme inline {
+  --font-sans: var(--font-inter);
+  --font-heading: var(--font-figtree);
+  --font-mono: var(--font-jetbrains);
+
+  /* shadcn semantic surface map */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-heading: var(--heading);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-subtle: var(--primary-subtle);
+  --color-primary-subtle-foreground: var(--primary-subtle-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-brand-secondary: var(--brand-secondary);
+  --color-cta: var(--cta);
+  --color-cta-hover: var(--cta-hover);
+  --color-cta-foreground: var(--cta-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted-foreground-strong: var(--muted-foreground-strong);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-border-brand: var(--border-brand);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* clinical triage — colour that carries meaning */
+  --color-triage-normal: var(--triage-normal);
+  --color-triage-normal-bg: var(--triage-normal-bg);
+  --color-triage-normal-fg: var(--triage-normal-fg);
+  --color-triage-review: var(--triage-review);
+  --color-triage-review-bg: var(--triage-review-bg);
+  --color-triage-review-fg: var(--triage-review-fg);
+  --color-triage-urgent: var(--triage-urgent);
+  --color-triage-urgent-bg: var(--triage-urgent-bg);
+  --color-triage-urgent-fg: var(--triage-urgent-fg);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.45);
+  --radius-2xl: calc(var(--radius) * 1.9);
+
+  --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.04);
+  --shadow-lg: 0 12px 32px rgba(15, 23, 42, 0.1), 0 4px 8px rgba(15, 23, 42, 0.05);
+
+  --container-content: 72rem;   /* 1152px */
+  --container-wide: 80rem;      /* 1280px */
+}
+
+:root {
+  --radius: 0.875rem; /* lg = 14px cards; md ≈ 11; sm ≈ 8 */
+
+  --background: #f7fefd;
+  --foreground: #1e293b;
+  --heading: #0f172a;
+
+  --surface: #ffffff;
+  --surface-muted: #edf9f7;
+  --card: #ffffff;
+  --card-foreground: #1e293b;
+  --popover: #ffffff;
+  --popover-foreground: #1e293b;
+
+  --primary: #0e7c86;
+  --primary-foreground: #ffffff;
+  --primary-subtle: #e6fbf7;
+  --primary-subtle-foreground: #0b5d66;
+
+  /* shadcn "secondary" = subtle button surface (not our brand cyan) */
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f172a;
+  --brand-secondary: #0891b2; /* the actual Calm Care cyan */
+
+  --cta: #059669;
+  --cta-hover: #047857;
+  --cta-foreground: #ffffff;
+
+  --muted: #edf9f7;
+  --muted-foreground: #64748b;
+  --muted-foreground-strong: #475569;
+
+  --accent: #e6fbf7; /* hover/highlight surface -> faint teal */
+  --accent-foreground: #0b5d66;
+
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+
+  --border: #e2e8f0;
+  --border-brand: #ccfbf1;
+  --input: #cbd5e1;
+  --ring: #0e7c86;
+
+  --triage-normal: #059669;
+  --triage-normal-bg: #e7f6ef;
+  --triage-normal-fg: #047857;
+  --triage-review: #d97706;
+  --triage-review-bg: #fdf1e3;
+  --triage-review-fg: #b45309;
+  --triage-urgent: #dc2626;
+  --triage-urgent-bg: #fcebeb;
+  --triage-urgent-fg: #b91c1c;
+
+  --chart-1: #0e7c86;
+  --chart-2: #0891b2;
+  --chart-3: #22d3ee;
+  --chart-4: #059669;
+  --chart-5: #5eead4;
+
+  --sidebar: #ffffff;
+  --sidebar-foreground: #1e293b;
+  --sidebar-primary: #0e7c86;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #e6fbf7;
+  --sidebar-accent-foreground: #0b5d66;
+  --sidebar-border: #e2e8f0;
+  --sidebar-ring: #0e7c86;
+}
+
+.dark {
+  --background: #0b1220;
+  --foreground: #e2e8f0;
+  --heading: #f8fafc;
+
+  --surface: #111a2b;
+  --surface-muted: #16233a;
+  --card: #111a2b;
+  --card-foreground: #e2e8f0;
+  --popover: #111a2b;
+  --popover-foreground: #e2e8f0;
+
+  --primary: #22d3ee;
+  --primary-foreground: #06232b;
+  --primary-subtle: #0e2a33;
+  --primary-subtle-foreground: #a5f3fc;
+
+  --secondary: #1e293b;
+  --secondary-foreground: #f1f5f9;
+  --brand-secondary: #22d3ee;
+
+  --cta: #10b981;
+  --cta-hover: #34d399;
+  --cta-foreground: #052e21;
+
+  --muted: #16233a;
+  --muted-foreground: #94a3b8;
+  --muted-foreground-strong: #cbd5e1;
+
+  --accent: #0e2a33;
+  --accent-foreground: #a5f3fc;
+
+  --destructive: #f87171;
+  --destructive-foreground: #1a0808;
+
+  --border: #24324a;
+  --border-brand: #164e5b;
+  --input: #33415c;
+  --ring: #22d3ee;
+
+  --triage-normal: #34d399;
+  --triage-normal-bg: #06281d;
+  --triage-normal-fg: #6ee7b7;
+  --triage-review: #fbbf24;
+  --triage-review-bg: #2a1f06;
+  --triage-review-fg: #fcd34d;
+  --triage-urgent: #f87171;
+  --triage-urgent-bg: #2a0e0e;
+  --triage-urgent-fg: #fca5a5;
+
+  --sidebar: #111a2b;
+  --sidebar-foreground: #e2e8f0;
+  --sidebar-primary: #22d3ee;
+  --sidebar-primary-foreground: #06232b;
+  --sidebar-accent: #0e2a33;
+  --sidebar-accent-foreground: #a5f3fc;
+  --sidebar-border: #24324a;
+  --sidebar-ring: #22d3ee;
+}
+
+/* MarketingNav signature: two concave scoops bitten from the bottom edge.
+   --logo-x / --action-x are set from JS to track the real pod gaps. */
+.nav-notched {
+  --notch: 16px;
+  -webkit-mask:
+    radial-gradient(circle var(--notch) at var(--logo-x, 220px) 100%, #0000 0 var(--notch), #000 calc(var(--notch) + 0.5px)),
+    radial-gradient(circle var(--notch) at var(--action-x, 80%) 100%, #0000 0 var(--notch), #000 calc(var(--notch) + 0.5px));
+  -webkit-mask-composite: source-in;
+  mask:
+    radial-gradient(circle var(--notch) at var(--logo-x, 220px) 100%, #0000 0 var(--notch), #000 calc(var(--notch) + 0.5px)),
+    radial-gradient(circle var(--notch) at var(--action-x, 80%) 100%, #0000 0 var(--notch), #000 calc(var(--notch) + 0.5px));
+  mask-composite: intersect;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply font-sans;
+  }
+  body {
+    @apply bg-background text-foreground;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, h4 {
+    font-family: var(--font-heading), ui-sans-serif, system-ui, sans-serif;
+    color: var(--heading);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+  button:not(:disabled), [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
