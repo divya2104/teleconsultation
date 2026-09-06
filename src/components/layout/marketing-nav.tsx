@@ -85,7 +85,7 @@ export function MarketingNav() {
             <Link
               href="/book"
               style={{ boxShadow: SHADOW_RAISED }}
-              className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-heading px-4 py-2 text-[15px] font-medium text-white transition-transform hover:-translate-y-0.5"
+              className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-cta px-4 py-2 text-[15px] font-medium text-cta-foreground transition-[transform,background-color] hover:-translate-y-0.5 hover:bg-cta-hover"
             >
               <CalendarPlus className="size-4" />
               Book consult
@@ -147,7 +147,7 @@ export function MarketingNav() {
                   href="/book"
                   onClick={() => setOpen(false)}
                   style={{ boxShadow: SHADOW_RAISED }}
-                  className="rounded-full bg-heading px-4 py-2 text-center text-sm font-semibold text-white"
+                  className="rounded-full bg-cta px-4 py-2 text-center text-sm font-semibold text-cta-foreground"
                 >
                   Book consult
                 </Link>
