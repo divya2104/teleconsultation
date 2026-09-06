@@ -1,6 +1,6 @@
 # Teleconsultation Platform — Project Context
 
-Status: **planning / pre-implementation**. No application code exists yet — this repo currently holds only this file and `README.md`. Everything below is the product and architecture direction agreed on so far; use it as the source of truth when implementation starts, and keep it updated as decisions change.
+Status: **design phase, in progress**. No application code exists in this repo yet — product/architecture planning is locked (v3), the site map is locked, and we are mid-way through the visual design pass (Step 1: theme selection, not yet signed off). Everything below is the full decision history; a new session should be able to pick up from this file alone without re-deriving anything. Keep it updated as decisions change.
 
 ## What this is
 
@@ -57,7 +57,7 @@ A **shared event taxonomy** (defined once, e.g. `free_test_started`, `booking_in
 
 ## Architecture (target, not yet built)
 
-- **Frontend**: single Next.js + TypeScript app, role-based route groups for patient / doctor / admin (not separate deployables at MVP scale).
+- **Frontend**: single Next.js + TypeScript app, role-based route groups for patient / doctor / admin (not separate deployables at MVP scale). *(Next.js is recommended and pending final confirmation — see "Design phase" below; the alternative on the table is Vite+React for a lighter pure-UI build, but Next.js's SSR/SSG matters for the free-test funnel's SEO.)*
 - **Backend**: one deployable, modularized by function — Auth, Doctor directory & search, **Booking & matching engine** (paths A/B/C + reassignment logic), **Pre-diagnosis & red-flag rules** (versioned/auditable, deliberately kept deterministic rather than ML at MVP), Prescriptions, Payments, Notifications, **Revenue & ops analytics**.
 - **Data**: PostgreSQL (core + financial truth), Redis (slot-locking with short TTL — critical since paths A/B/C can race for the same doctor's slot; a lock failure triggers the fallback-to-alternate-doctor flow automatically), S3-compatible object storage (doctor credential docs, scan images).
 - **External integrations**: Google Meet + Calendar API (video), WhatsApp Business API (notifications/decisions, SMS fallback), a payment gateway (Razorpay/UPI), PostHog (behavioral analytics + A/B flags).
@@ -68,11 +68,59 @@ A **shared event taxonomy** (defined once, e.g. `free_test_started`, `booking_in
 - **DPDP Act 2023** consent required at signup and at self-test data collection.
 - The self-test/pre-diagnosis module must stay worded as a screening aid, never a diagnosis, to avoid CDSCO medical-device software classification.
 
+## Site map
+
+One app, three role-based route groups. Full detail (a tree diagram + page-by-page tables) lives in the "EyeCare Site Map" artifact linked below — summary here:
+
+- **Patient site & app**: Home, Test Your Vision (Free), Find a Doctor (Path A), See a Doctor Now (Path B), Schedule a Visit (Path C), How It Works, Pricing & Trust, About/FAQ, Join as a Doctor, My Account, Legal & Privacy. The free test + three path pages are the direct booking-conversion pages.
+- **Doctor portal**: Dashboard & Queue, Appointment & Consult Room, Availability & Slots, Prescriptions, Earnings & Ratings, Profile & Verification.
+- **Admin console**: Doctor Management, Appointment Operations, Revenue & Funnel Dashboard, Operational Health & Reliability, Content & Promotions, Compliance Tracker.
+
+### Homepage anatomy (the page carrying the "nudge toward booking" mandate)
+
+In scroll order: sticky nav (persistent Book Appointment button) → hero (3 ranked CTAs: Test Your Vision Free / Book Appointment / See a Doctor Now, + trust strip) → How It Works → Why ophthalmology-only (doctor credential cards) → free-test reprised (mid-page, differently worded) → outcomes/testimonials → transparent pricing block → doctor recruitment strip → FAQ snippet → footer. Four deliberate nudge points at different scroll depths (nav button, hero, free-test reprise, pricing block) so a visitor who skips one doesn't skip all of them.
+
 ## Reference material
 
-- Full architecture write-up with diagrams (patient booking flow, doctor rejection/reassignment state flow, system architecture, analytics event taxonomy): published as an Artifact, "EyeCare Platform Blueprint" — https://claude.ai/code/artifact/6d230ed2-a0f0-482d-ae45-a15ed1695b9a (owned by the user; update it, don't recreate it, when decisions here change).
-- EyeGenie reference points (from public search results, not a direct fetch — this session's network policy blocks eyegenie.in): doorstep technician + AI-screened eye exam, real-time ophthalmologist supervision, frame selection + medicine delivery, Kanpur-based, founded 2023.
+- **Architecture & flows** — patient booking flow, doctor rejection/reassignment state flow, system architecture, analytics event taxonomy: Artifact "EyeCare Platform Blueprint" — https://claude.ai/code/artifact/6d230ed2-a0f0-482d-ae45-a15ed1695b9a
+- **Site map** — full tree + homepage anatomy + per-role page inventories: Artifact "EyeCare Site Map" — https://claude.ai/code/artifact/6179e0d7-4a10-4751-aab1-8d9913d923fe
+- Both artifacts are owned by the user — update them in place, don't recreate, when decisions change.
+- EyeGenie reference points (from public search results, not a direct fetch — network policy blocks eyegenie.in from this environment): doorstep technician + AI-screened eye exam, real-time ophthalmologist supervision, frame selection + medicine delivery, Kanpur-based, founded 2023.
 
-## Where things stand / next step
+## Design phase — where we actually are
 
-Architecture and journey planning is considered locked as of this file's writing (v3 of the blueprint). **Next step per the user's stated process: visual/layout design of the site**, only after which implementation begins. Do not start scaffolding code without confirming the design phase is done, per the user's explicit sequencing request earlier in this project.
+Product/architecture planning and the site map are locked. We are now inside the visual design pass, working **top-down with sign-off required at each level** before going deeper:
+
+1. **Theme** (palette, type, spacing, motion) → land as design tokens — **in progress, awaiting sign-off, see below**
+2. Global layout shell (nav, footer, containers, breakpoints, shared primitives)
+3. Page list
+4. Sections per page
+5. Components (built against the design system, with mock/static data)
+
+Then assemble sections → pages → site. **Backend and functionality come after the UI is approved** — this phase is UI-only, mock data throughout.
+
+**Stack decision**: React + Tailwind + shadcn/ui + Framer Motion for animation. Next.js is recommended over Vite (SEO matters for the free-test funnel landing page) but **not yet explicitly confirmed by the user** — confirm before scaffolding.
+
+### Tooling status (check freshness before relying on any of this)
+
+- **Figma MCP**: connected, read-only (View seat on the "eye teleconsultation" Figma team — sufficient for `get_design_context`/`get_screenshot`/`get_metadata` as a layout reference, not for writing designs into Figma). One file exists: `figma.com/design/TUA1XfCAm73DqVzwjavJXM` — confirmed empty (no frames) as of this writing.
+- **Lovable**: was used to prototype the Home page in a separate sandbox (project id `01d91b6b-0489-4ade-a47c-7ad35be86968`, workspace `O76qwvjQBZZe1xnwGxJT`). Got partway through a full redesign (dark near-black teal+amber theme, Inter Tight/Inter/JetBrains Mono, framer-motion reveal/stagger helpers committed) before **the workspace ran out of credits mid-build**. **Decision: abandoned as the build target** — we now build directly in this repo instead. The Lovable exploration is kept only as design inspiration (see theme Option A below), not as code to port.
+- **21st.dev Magic MCP** (`mcp__magic__*`): not connected in this session despite being expected — searched, not found. Proceeding without it.
+- **`ui-ux-pro-max` skill/plugin**: does not exist anywhere in this account's plugin/skill catalog (searched via `SearchPlugins`/`SearchSkills` — zero matches), and no matching files exist anywhere on this session's filesystem. If the user has this locally on their own machine, it will **not** be visible to a cloud/remote session unless committed into this repo (e.g. under `.claude/skills/`) and pushed. A real, catalog-available substitute was offered instead: the **"design" plugin** (`design:design-system`, `design:design-critique`, `design:accessibility-review`, `design:ux-copy`) — not confirmed installed as of this writing.
+- **`figma:figma-design-to-code` skill**: also not present in this session (Figma's own real skills are `figma:figma-use`, `figma:figma-generate-design`, etc. — no `figma-design-to-code` among them). Figma is being used read-only anyway (no skill needed for `get_design_context`/`get_screenshot`), so this is non-blocking.
+
+### Theme — 3 options proposed, awaiting user sign-off
+
+**Option A — "Clinical Dark"**: near-black teal-tinted background, deep teal primary + warm amber accent, gradient-mesh glow orbs, Inter Tight (display) / Inter (body) / JetBrains Mono (labels). Scroll-reveal + stagger + hover-glow + count-up stats + glass-blur nav. High-tech/specialist vibe, closest to Linear/Vercel's dark marketing sites. (This is the direction the Lovable attempt was mid-way through building.)
+
+**Option B — "Bright Confident"**: same motion/interaction system, inverted to a warm light surface — same deep teal primary, coral/warm-orange secondary accent, soft colored shadows instead of glow. Bold geometric-sans display / Inter body / JetBrains Mono labels. Warmer, more approachable, likely reads as more immediately trustworthy across a broader (including older, less tech-fluent) patient demographic than a dark UI.
+
+**Option C — "Editorial Teal"**: hybrid — one dramatic dark gradient hero band (Framer-style drama) then the rest of the page in bright, high-legibility light for the trust-heavy sections (doctor credentials, pricing, FAQ). Uses **Fraunces** (display serif, continuity with the original Blueprint/Site Map artifacts' typography) / Inter body / IBM Plex Mono labels — trades some of the "exact Linear look" for a more distinctive, less-templated identity.
+
+**Open tension flagged to the user, not yet resolved**: A and B commit fully to the geometric-sans, no-serif look the named reference sites (Linear/Vercel/Stripe) actually use; C intentionally deviates with a serif for distinctiveness. Waiting on the user's call on which matters more, plus final theme pick (or a blend), before landing tokens and moving to Step 2 (global layout shell).
+
+## Next action for a new session
+
+1. Confirm whether the user has since picked a theme option (or blend) and confirmed Next.js vs. an alternative — if not asked yet, ask before proceeding.
+2. Once theme is signed off: land it as actual design tokens (Tailwind config / CSS variables), then move to Step 2 (global layout shell) — still no backend, still mock data, still sign-off at each step before going deeper.
+3. Do not re-attempt Lovable as a build target unless the user explicitly asks (workspace was out of credits as of this writing — check if resolved before assuming otherwise).
