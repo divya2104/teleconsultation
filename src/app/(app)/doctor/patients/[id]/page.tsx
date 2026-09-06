@@ -6,6 +6,10 @@ import { Button } from "@/components/ui/button";
 import { patients, patientHistory } from "@/lib/mock/doctor";
 import { fmtDate } from "@/lib/mock/patient";
 
+export function generateStaticParams() {
+  return patients.map((p) => ({ id: p.id }));
+}
+
 export default async function Page({
   params,
 }: {

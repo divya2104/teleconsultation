@@ -13,6 +13,10 @@ import {
   fmtDateTime,
 } from "@/lib/mock/patient";
 
+export function generateStaticParams() {
+  return appointments.map((a) => ({ id: a.id }));
+}
+
 export async function generateMetadata({
   params,
 }: {
