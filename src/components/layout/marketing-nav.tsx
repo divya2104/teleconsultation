@@ -78,14 +78,14 @@ export function MarketingNav() {
           <div className="flex items-center gap-2">
             <Link
               href="/login"
-              className="rounded-full px-3 py-1.5 text-sm font-medium text-muted-foreground-strong transition-colors hover:text-heading"
+              className="rounded-full px-3 py-2 text-[15px] font-bold tracking-tight text-heading transition-colors hover:bg-surface-muted"
             >
               Log in
             </Link>
             <Link
               href="/book"
               style={{ boxShadow: SHADOW_RAISED }}
-              className="inline-flex items-center gap-1.5 rounded-full bg-heading px-4 py-2 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5"
+              className="inline-flex items-center gap-1.5 rounded-full bg-heading px-5 py-2.5 text-[15px] font-bold tracking-tight text-white transition-transform hover:-translate-y-0.5"
             >
               <CalendarPlus className="size-4" />
               Book consult
@@ -160,44 +160,29 @@ export function MarketingNav() {
   );
 }
 
+const linkBase =
+  "inline-flex items-center gap-1 rounded-full px-4 py-2 text-[15px] font-bold tracking-tight text-heading outline-none transition-colors duration-150 hover:bg-primary-subtle hover:text-primary-subtle-foreground focus-visible:ring-2 focus-visible:ring-ring/50";
+
 function NavLinks() {
   const pathname = usePathname();
-  const [hovered, setHovered] = useState<number | null>(null);
 
   return (
-    <div className="flex items-center gap-1" onMouseLeave={() => setHovered(null)}>
-      {LINKS.map((item, i) => {
+    <div className="flex items-center gap-0.5">
+      {LINKS.map((item) => {
         const active = pathname === item.href;
-        const inner = (
-          <>
-            {hovered === i ? (
-              <motion.span
-                layoutId="nav-hover"
-                className="absolute inset-0 rounded-full bg-surface-muted"
-                transition={{ type: "spring", stiffness: 320, damping: 30 }}
-              />
-            ) : null}
-            <span
-              className={cn(
-                "relative z-10 inline-flex items-center gap-1",
-                active ? "text-heading" : "text-muted-foreground-strong",
-              )}
-            >
-              {item.label}
-              {item.dropdown ? <ChevronDown className="size-3.5" /> : null}
-            </span>
-          </>
-        );
 
         if (item.dropdown) {
           return (
             <DropdownMenu key={item.href}>
               <DropdownMenuTrigger asChild>
                 <button
-                  onMouseEnter={() => setHovered(i)}
-                  className="relative rounded-full px-3 py-1.5 text-sm font-medium outline-none"
+                  className={cn(
+                    linkBase,
+                    "data-[state=open]:bg-primary-subtle data-[state=open]:text-primary-subtle-foreground",
+                  )}
                 >
-                  {inner}
+                  {item.label}
+                  <ChevronDown className="size-4 transition-transform group-data-[state=open]:rotate-180" />
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="center" className="w-[280px] p-2">
@@ -218,11 +203,13 @@ function NavLinks() {
           <Link
             key={item.href}
             href={item.href}
-            onMouseEnter={() => setHovered(i)}
             aria-current={active ? "page" : undefined}
-            className="relative rounded-full px-3 py-1.5 text-sm font-medium outline-none"
+            className={cn(
+              linkBase,
+              active && "bg-primary-subtle text-primary-subtle-foreground",
+            )}
           >
-            {inner}
+            {item.label}
           </Link>
         );
       })}
