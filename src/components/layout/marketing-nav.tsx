@@ -25,6 +25,14 @@ const LINKS = [
 const EASE = "duration-[450ms] ease-[cubic-bezier(0.22,1,0.36,1)]";
 const TRANSITION = `transition-[max-width,width,margin,border-radius,box-shadow,background-color,backdrop-filter,border-color,padding] ${EASE}`;
 
+// applied via inline style — Tailwind v4 arbitrary shadow utilities weren't
+// resolving the layered value reliably here
+const SHADOW_REST = "0 1px 3px rgba(15,23,42,0.06), 0 1px 2px rgba(15,23,42,0.04)";
+const SHADOW_FLOAT =
+  "0 0 24px rgba(15,23,42,0.06), 0 1px 1px rgba(0,0,0,0.05), 0 0 0 1px rgba(15,23,42,0.04), 0 0 4px rgba(15,23,42,0.08), 0 16px 68px rgba(15,23,42,0.05), 0 1px 0 rgba(255,255,255,0.6) inset";
+const SHADOW_RAISED =
+  "0 0 24px rgba(15,23,42,0.06), 0 1px 1px rgba(0,0,0,0.12), 0 0 0 1px rgba(15,23,42,0.1), 0 4px 10px rgba(15,23,42,0.12), 0 1px 0 rgba(255,255,255,0.14) inset";
+
 export function MarketingNav() {
   const [floating, setFloating] = useState(false);
   const [open, setOpen] = useState(false);
@@ -41,12 +49,13 @@ export function MarketingNav() {
       {/* desktop */}
       <nav
         aria-label="Primary"
+        style={{ boxShadow: floating ? SHADOW_FLOAT : SHADOW_REST }}
         className={cn(
           "mx-auto hidden w-full border-border md:block",
           TRANSITION,
           floating
-            ? "mt-3 max-w-[820px] rounded-full border-transparent bg-surface/80 shadow-[var(--shadow-nav)] [backdrop-filter:blur(10px)]"
-            : "mt-0 max-w-none rounded-none border-b bg-surface shadow-sm",
+            ? "mt-3 max-w-[820px] rounded-full border-transparent bg-surface/80 [backdrop-filter:blur(10px)]"
+            : "mt-0 max-w-none rounded-none border-b bg-surface",
         )}
       >
         <div
@@ -70,7 +79,8 @@ export function MarketingNav() {
             </Link>
             <Link
               href="/book"
-              className="inline-flex items-center gap-1.5 rounded-full bg-heading px-4 py-2 text-sm font-semibold text-white shadow-[var(--shadow-raised)] transition-transform hover:-translate-y-0.5"
+              style={{ boxShadow: SHADOW_RAISED }}
+              className="inline-flex items-center gap-1.5 rounded-full bg-heading px-4 py-2 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5"
             >
               <CalendarPlus className="size-4" />
               Book consult
@@ -81,12 +91,13 @@ export function MarketingNav() {
 
       {/* mobile */}
       <nav
+        style={{ boxShadow: floating ? SHADOW_FLOAT : SHADOW_REST }}
         className={cn(
           "relative mx-auto flex items-center justify-between border-border px-4 py-2.5 md:hidden",
           TRANSITION,
           floating
-            ? "mt-2 w-[calc(100%-1rem)] rounded-3xl border-transparent bg-surface/90 shadow-[var(--shadow-nav)] [backdrop-filter:blur(10px)]"
-            : "mt-0 w-full rounded-none border-b bg-surface shadow-sm",
+            ? "mt-2 w-[calc(100%-1rem)] rounded-3xl border-transparent bg-surface/90 [backdrop-filter:blur(10px)]"
+            : "mt-0 w-full rounded-none border-b bg-surface",
         )}
       >
         <Logo />
@@ -106,7 +117,8 @@ export function MarketingNav() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.18 }}
-              className="absolute inset-x-2 top-[calc(100%+0.5rem)] flex flex-col gap-1 rounded-[--radius-lg] border border-border bg-surface p-3 shadow-[var(--shadow-nav)]"
+              style={{ boxShadow: SHADOW_FLOAT }}
+              className="absolute inset-x-2 top-[calc(100%+0.5rem)] flex flex-col gap-1 rounded-[--radius-lg] border border-border bg-surface p-3"
             >
               {marketingNav.map((i) => (
                 <Link
@@ -129,7 +141,8 @@ export function MarketingNav() {
                 <Link
                   href="/book"
                   onClick={() => setOpen(false)}
-                  className="rounded-full bg-heading px-4 py-2 text-center text-sm font-semibold text-white shadow-[var(--shadow-raised)]"
+                  style={{ boxShadow: SHADOW_RAISED }}
+                  className="rounded-full bg-heading px-4 py-2 text-center text-sm font-semibold text-white"
                 >
                   Book consult
                 </Link>
