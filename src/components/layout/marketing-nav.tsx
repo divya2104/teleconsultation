@@ -1,14 +1,9 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  AnimatePresence,
-  motion,
-  useMotionValueEvent,
-  useScroll,
-} from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { Menu, X, ChevronDown, CalendarPlus } from "lucide-react";
 import { Logo } from "@/components/common/logo";
 import {
@@ -27,66 +22,72 @@ const LINKS = [
   { label: "About", href: "/about" },
 ];
 
+const EASE = "duration-[450ms] ease-[cubic-bezier(0.22,1,0.36,1)]";
+const TRANSITION = `transition-[max-width,width,margin,border-radius,box-shadow,background-color,backdrop-filter,border-color,padding] ${EASE}`;
+
 export function MarketingNav() {
-  const ref = useRef<HTMLDivElement>(null);
-  const { scrollY } = useScroll();
-  const [visible, setVisible] = useState(false);
+  const [floating, setFloating] = useState(false);
   const [open, setOpen] = useState(false);
 
-  useMotionValueEvent(scrollY, "change", (y) => setVisible(y > 60));
+  useEffect(() => {
+    const onScroll = () => setFloating(window.scrollY > 60);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   return (
-    <div ref={ref} className="sticky inset-x-0 top-4 z-50 w-full">
+    <div className="sticky top-0 z-50 w-full">
       {/* desktop */}
-      <motion.nav
+      <nav
         aria-label="Primary"
-        animate={{
-          maxWidth: visible ? 820 : 1152,
-          y: visible ? 8 : 0,
-          borderRadius: visible ? 9999 : 20,
-          backgroundColor: visible
-            ? "color-mix(in srgb, var(--surface) 80%, transparent)"
-            : "rgba(255,255,255,0)",
-          boxShadow: visible ? "var(--shadow-nav)" : "0 0 #0000",
-        }}
-        transition={{ type: "spring", stiffness: 200, damping: 50 }}
-        style={{ backdropFilter: visible ? "blur(10px)" : "none" }}
-        className="mx-auto hidden w-full items-center justify-between gap-4 px-4 py-2.5 md:flex"
+        className={cn(
+          "mx-auto hidden w-full border-border md:block",
+          TRANSITION,
+          floating
+            ? "mt-3 max-w-[820px] rounded-full border-transparent bg-surface/80 shadow-[var(--shadow-nav)] [backdrop-filter:blur(10px)]"
+            : "mt-0 max-w-none rounded-none border-b bg-surface shadow-sm",
+        )}
       >
-        <Logo />
-
-        <NavLinks />
-
-        <div className="flex items-center gap-2">
-          <Link
-            href="/login"
-            className="rounded-full px-3 py-1.5 text-sm font-medium text-muted-foreground-strong transition-colors hover:text-heading"
-          >
-            Log in
-          </Link>
-          <Link
-            href="/book"
-            className="inline-flex items-center gap-1.5 rounded-full bg-heading px-4 py-2 text-sm font-semibold text-white shadow-[var(--shadow-raised)] transition-transform hover:-translate-y-0.5"
-          >
-            <CalendarPlus className="size-4" />
-            Book consult
-          </Link>
+        <div
+          className={cn(
+            "mx-auto flex w-full items-center justify-between gap-4 pt-3 pb-[17px]",
+            EASE,
+            "transition-[max-width,padding]",
+            floating
+              ? "max-w-[788px] px-4"
+              : "max-w-[var(--container-content)] px-4 md:px-6 lg:px-8",
+          )}
+        >
+          <Logo />
+          <NavLinks />
+          <div className="flex items-center gap-2">
+            <Link
+              href="/login"
+              className="rounded-full px-3 py-1.5 text-sm font-medium text-muted-foreground-strong transition-colors hover:text-heading"
+            >
+              Log in
+            </Link>
+            <Link
+              href="/book"
+              className="inline-flex items-center gap-1.5 rounded-full bg-heading px-4 py-2 text-sm font-semibold text-white shadow-[var(--shadow-raised)] transition-transform hover:-translate-y-0.5"
+            >
+              <CalendarPlus className="size-4" />
+              Book consult
+            </Link>
+          </div>
         </div>
-      </motion.nav>
+      </nav>
 
       {/* mobile */}
-      <motion.nav
-        animate={{
-          y: visible ? 8 : 0,
-          borderRadius: visible ? 24 : 16,
-          backgroundColor: visible
-            ? "color-mix(in srgb, var(--surface) 88%, transparent)"
-            : "rgba(255,255,255,0)",
-          boxShadow: visible ? "var(--shadow-nav)" : "0 0 #0000",
-        }}
-        transition={{ type: "spring", stiffness: 200, damping: 50 }}
-        style={{ backdropFilter: visible ? "blur(10px)" : "none" }}
-        className="mx-auto flex w-[calc(100%-1rem)] items-center justify-between px-3 py-2.5 md:hidden"
+      <nav
+        className={cn(
+          "relative mx-auto flex items-center justify-between border-border px-4 py-2.5 md:hidden",
+          TRANSITION,
+          floating
+            ? "mt-2 w-[calc(100%-1rem)] rounded-3xl border-transparent bg-surface/90 shadow-[var(--shadow-nav)] [backdrop-filter:blur(10px)]"
+            : "mt-0 w-full rounded-none border-b bg-surface shadow-sm",
+        )}
       >
         <Logo />
         <button
@@ -136,7 +137,7 @@ export function MarketingNav() {
             </motion.div>
           ) : null}
         </AnimatePresence>
-      </motion.nav>
+      </nav>
     </div>
   );
 }
@@ -146,10 +147,7 @@ function NavLinks() {
   const [hovered, setHovered] = useState<number | null>(null);
 
   return (
-    <div
-      className="flex items-center gap-1"
-      onMouseLeave={() => setHovered(null)}
-    >
+    <div className="flex items-center gap-1" onMouseLeave={() => setHovered(null)}>
       {LINKS.map((item, i) => {
         const active = pathname === item.href;
         const inner = (
