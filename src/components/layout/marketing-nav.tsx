@@ -78,14 +78,14 @@ export function MarketingNav() {
           <div className="flex items-center gap-2">
             <Link
               href="/login"
-              className="rounded-full px-3 py-2 text-[15px] font-bold tracking-tight text-heading transition-colors hover:bg-surface-muted"
+              className="whitespace-nowrap rounded-full px-3 py-2 text-[15px] font-medium text-heading transition-colors hover:bg-surface-muted"
             >
               Log in
             </Link>
             <Link
               href="/book"
               style={{ boxShadow: SHADOW_RAISED }}
-              className="inline-flex items-center gap-1.5 rounded-full bg-heading px-5 py-2.5 text-[15px] font-bold tracking-tight text-white transition-transform hover:-translate-y-0.5"
+              className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-heading px-4 py-2 text-[15px] font-medium text-white transition-transform hover:-translate-y-0.5"
             >
               <CalendarPlus className="size-4" />
               Book consult
@@ -161,13 +161,13 @@ export function MarketingNav() {
 }
 
 const linkBase =
-  "inline-flex items-center gap-1 rounded-full px-4 py-2 text-[15px] font-bold tracking-tight text-heading outline-none transition-colors duration-150 hover:bg-primary-subtle hover:text-primary-subtle-foreground focus-visible:ring-2 focus-visible:ring-ring/50";
+  "inline-flex items-center gap-1 whitespace-nowrap rounded-full px-3.5 py-2 text-[15px] font-medium text-heading outline-none transition-colors duration-150 hover:bg-primary-subtle hover:text-primary-subtle-foreground focus-visible:ring-2 focus-visible:ring-ring/50";
 
 function NavLinks() {
   const pathname = usePathname();
 
   return (
-    <div className="flex items-center gap-0.5">
+    <div className="flex shrink-0 items-center gap-0.5">
       {LINKS.map((item) => {
         const active = pathname === item.href;
 
