@@ -45,22 +45,22 @@ export function MarketingNav() {
   }, []);
 
   return (
-    <div className="sticky top-0 z-50 w-full">
+    <div className="sticky top-0 z-50 w-full px-[5px] pt-[5px]">
       {/* desktop */}
       <nav
         aria-label="Primary"
         style={{ boxShadow: floating ? SHADOW_FLOAT : SHADOW_REST }}
         className={cn(
-          "mx-auto hidden w-full border-border md:block",
+          "mx-auto hidden w-full border border-border md:block",
           TRANSITION,
           floating
-            ? "mt-3 max-w-[820px] rounded-full border-transparent bg-surface/80 [backdrop-filter:blur(10px)]"
-            : "mt-0 max-w-none rounded-none border-b bg-surface",
+            ? "mt-2 max-w-[820px] rounded-full border-transparent bg-surface/80 [backdrop-filter:blur(10px)]"
+            : "mt-0 max-w-none rounded-[28px] bg-surface",
         )}
       >
         <div
           className={cn(
-            "mx-auto flex w-full items-center justify-between gap-4 pt-3 pb-[17px]",
+            "mx-auto flex w-full items-center justify-between gap-4 py-3",
             EASE,
             "transition-[max-width,padding]",
             floating
@@ -93,11 +93,11 @@ export function MarketingNav() {
       <nav
         style={{ boxShadow: floating ? SHADOW_FLOAT : SHADOW_REST }}
         className={cn(
-          "relative mx-auto flex items-center justify-between border-border px-4 py-2.5 md:hidden",
+          "relative mx-auto flex w-full items-center justify-between border border-border px-4 py-2.5 md:hidden",
           TRANSITION,
           floating
-            ? "mt-2 w-[calc(100%-1rem)] rounded-3xl border-transparent bg-surface/90 [backdrop-filter:blur(10px)]"
-            : "mt-0 w-full rounded-none border-b bg-surface",
+            ? "mt-2 rounded-3xl border-transparent bg-surface/90 [backdrop-filter:blur(10px)]"
+            : "mt-0 rounded-2xl bg-surface",
         )}
       >
         <Logo />
