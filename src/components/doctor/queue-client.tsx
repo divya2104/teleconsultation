@@ -19,9 +19,9 @@ type FilterKey = (typeof FILTERS)[number]["key"];
 export function QueueClient() {
   const [filter, setFilter] = useState<FilterKey>("upcoming");
   const [q, setQ] = useState("");
+  const [now] = useState(() => Date.now());
 
   const rows = useMemo(() => {
-    const now = Date.now();
     return queue
       .filter((item) => {
         if (filter === "completed") return item.status === "completed" || item.status === "no-show";
@@ -33,7 +33,7 @@ export function QueueClient() {
         q ? item.patientName.toLowerCase().includes(q.toLowerCase()) : true,
       )
       .sort((a, b) => +new Date(a.slot) - +new Date(b.slot));
-  }, [filter, q]);
+  }, [filter, q, now]);
 
   return (
     <div className="flex flex-col gap-6">

@@ -16,6 +16,7 @@ import { Section } from "@/components/layout/section";
 import { Button } from "@/components/ui/button";
 import { TriageBadge } from "@/components/common/triage-badge";
 import { DataField } from "@/components/common/data-field";
+import { CtaBand } from "@/components/marketing/cta-band";
 import { fadeInUp, sectionReveal, staggerContainer } from "@/lib/motion";
 
 const STEPS = [
@@ -162,7 +163,7 @@ export function HomeContent() {
             <BellRing className="size-6" strokeWidth={2} />
           </span>
           <div>
-            <h2 className="text-2xl">A follow-up date that's actually yours</h2>
+            <h2 className="text-2xl">A follow-up date that&apos;s actually yours</h2>
             <p className="mt-2 max-w-2xl text-muted-foreground-strong">
               After each consult a simple risk score — from your diagnosis and
               diabetes status — sets a personalized “come back by” reminder,
@@ -173,26 +174,15 @@ export function HomeContent() {
         </Container>
       </Section>
 
-      {/* trust + doctor CTA */}
+      {/* doctor CTA */}
       <Section>
-        <Container className="flex flex-col items-start gap-6 rounded-[--radius-xl] border border-border bg-surface p-8 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-start gap-4">
-            <ShieldCheck className="size-6 shrink-0 text-primary" strokeWidth={2} />
-            <div>
-              <h2 className="text-xl">Are you an ophthalmologist?</h2>
-              <p className="mt-1 max-w-xl text-sm text-muted-foreground">
-                Consult on your schedule, with triage summaries that shorten every
-                call. Pay-per-consult, no subscription.
-              </p>
-            </div>
-          </div>
-          <Button asChild size="lg" className="h-11 shrink-0 px-6">
-            <Link href="/for-doctors">
-              Practise with us
-              <ArrowRight className="size-4" />
-            </Link>
-          </Button>
-        </Container>
+        <CtaBand
+          icon={ShieldCheck}
+          title="Are you an ophthalmologist?"
+          body="Consult on your schedule, with triage summaries that shorten every call. Pay-per-consult, no subscription."
+          ctaLabel="Practise with us"
+          ctaHref="/for-doctors"
+        />
       </Section>
     </>
   );

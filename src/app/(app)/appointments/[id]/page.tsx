@@ -13,6 +13,16 @@ import {
   fmtDateTime,
 } from "@/lib/mock/patient";
 
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const appt = appointments.find((a) => a.id === id);
+  return { title: appt ? `Consult with ${appt.doctorName}` : "Appointment" };
+}
+
 export default async function Page({
   params,
 }: {

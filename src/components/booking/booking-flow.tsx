@@ -72,6 +72,7 @@ export function BookingFlow() {
   const [slot, setSlot] = useState("");
   const [consent, setConsent] = useState(false);
   const [pay, setPay] = useState<"idle" | "processing" | "failed" | "expired">("idle");
+  const [bookingRef, setBookingRef] = useState("");
   const [left, setLeft] = useState(HOLD_SECONDS);
 
   const [intakeDone, setIntakeDone] = useState(false);
@@ -370,6 +371,7 @@ export function BookingFlow() {
             disabled={pay === "processing"}
             onClick={() => {
               setPay("processing");
+              setBookingRef(`CS-${String(Date.now()).slice(-6)}`);
               setTimeout(() => {
                 setPay("idle");
                 setPhase("done");
@@ -397,9 +399,7 @@ export function BookingFlow() {
           <h1 className="mt-4 text-2xl">Booking confirmed</h1>
           <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
             Reference{" "}
-            <span className="font-mono text-foreground">
-              CS-{String(Date.now()).slice(-6)}
-            </span>
+            <span className="font-mono text-foreground">{bookingRef}</span>
             . We&apos;ve sent the details to your WhatsApp. Your prescription will
             arrive there after the consult.
           </p>

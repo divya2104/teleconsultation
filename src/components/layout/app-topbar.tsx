@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { Menu, Bell } from "lucide-react";
+import { Menu } from "lucide-react";
 import { Logo } from "@/components/common/logo";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { NotificationsMenu } from "@/components/layout/notifications-menu";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -53,20 +54,7 @@ export function AppTopbar({
       </div>
 
       <div className="ml-auto flex items-center gap-1">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" aria-label="Notifications">
-              <Bell className="size-5" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-72">
-            <DropdownMenuLabel>Notifications</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-sm text-muted-foreground">
-              You&apos;re all caught up.
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <NotificationsMenu />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

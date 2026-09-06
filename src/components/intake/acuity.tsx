@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { NavButtons } from "@/components/intake/nav-buttons";
 import { ACUITY_ROWS } from "@/lib/mock/intake";
 import { readDraft, writeDraft } from "@/lib/intake-store";
-import { cn } from "@/lib/utils";
 
 type Phase = "calibrate" | "right" | "left" | "done";
 
