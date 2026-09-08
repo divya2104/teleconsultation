@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { ArrowLeft, ArrowRight, Check, Stethoscope, User } from "lucide-react";
+import { ArrowLeft, Check } from "lucide-react";
 import { Logo } from "@/components/common/logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,18 +16,29 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { createClient } from "@/lib/supabase/client";
 
-type Phase = "identifier" | "otp" | "profile" | "role" | "apply" | "applied";
+type Phase = "identifier" | "otp" | "apply" | "applied";
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function LoginFlow() {
   const router = useRouter();
   const params = useSearchParams();
   const practice = params.get("intent") === "practice";
+  const next = params.get("next") || "";
+  const supabase = createClient();
 
   const [phase, setPhase] = useState<Phase>("identifier");
-  const [identifier, setIdentifier] = useState("");
+  const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [resendIn, setResendIn] = useState(0);
+  const [busy, setBusy] = useState(false);
+
+  // practitioner-application fields
+  const [applyName, setApplyName] = useState("");
+  const [applyReg, setApplyReg] = useState("");
+  const [applySpec, setApplySpec] = useState("");
 
   useEffect(() => {
     if (resendIn <= 0) return;
@@ -35,17 +46,91 @@ export function LoginFlow() {
     return () => clearTimeout(t);
   }, [resendIn]);
 
-  const sendCode = () => {
+  const sendCode = async () => {
+    if (!EMAIL_RE.test(email.trim())) {
+      toast.error("Enter a valid email address");
+      return;
+    }
+    setBusy(true);
+    const { error } = await supabase.auth.signInWithOtp({
+      email: email.trim(),
+      options: { shouldCreateUser: true },
+    });
+    setBusy(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     setResendIn(30);
     setPhase("otp");
   };
 
-  const verify = () => {
-    if (otp.replace(/\D/g, "").length < 4) {
+  const verify = async () => {
+    const token = otp.replace(/\D/g, "");
+    if (token.length < 6) {
       toast.error("Enter the 6-digit code");
       return;
     }
-    setPhase(practice ? "apply" : "role");
+    setBusy(true);
+    const { data, error } = await supabase.auth.verifyOtp({
+      email: email.trim(),
+      token,
+      type: "email",
+    });
+    if (error || !data.user) {
+      setBusy(false);
+      toast.error(error?.message ?? "That code didn't work");
+      return;
+    }
+
+    if (practice) {
+      setBusy(false);
+      setPhase("apply");
+      return;
+    }
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", data.user.id)
+      .single();
+    const home =
+      profile?.role === "doctor"
+        ? "/doctor/dashboard"
+        : profile?.role === "admin"
+          ? "/admin"
+          : "/dashboard";
+    router.replace(next.startsWith("/") ? next : home);
+    router.refresh();
+  };
+
+  const submitApplication = async () => {
+    if (!applyName.trim() || !applyReg.trim() || !applySpec) {
+      toast.error("Fill in name, registration number and specialty");
+      return;
+    }
+    setBusy(true);
+    const { data: auth } = await supabase.auth.getUser();
+    if (!auth.user) {
+      setBusy(false);
+      toast.error("Session expired — request a new code");
+      setPhase("identifier");
+      return;
+    }
+    const { error } = await supabase.from("doctors").insert({
+      profile_id: auth.user.id,
+      name: applyName.trim(),
+      reg_no: applyReg.trim(),
+      specialty: applySpec,
+      verification_status: "pending",
+      active: false,
+    });
+    setBusy(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    setPhase("applied");
   };
 
   return (
@@ -58,24 +143,25 @@ export function LoginFlow() {
             {practice ? "Apply to practise" : "Log in or sign up"}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            We&apos;ll send a one-time code. No password to remember.
+            We&apos;ll email you a one-time code. No password to remember.
           </p>
           <div className="mt-6 flex flex-col gap-1.5">
-            <Label htmlFor="id">Mobile number or email</Label>
+            <Label htmlFor="id">Email address</Label>
             <Input
               id="id"
-              value={identifier}
-              onChange={(e) => setIdentifier(e.target.value)}
-              placeholder="+91 98765 43210"
-              autoComplete="off"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              autoComplete="email"
             />
           </div>
           <Button
             className="mt-5 h-11 w-full bg-cta text-cta-foreground hover:bg-cta-hover"
-            disabled={identifier.trim().length < 4}
+            disabled={busy || email.trim().length < 4}
             onClick={sendCode}
           >
-            Send code
+            {busy ? "Sending…" : "Send code"}
           </Button>
           <p className="mt-4 text-xs text-muted-foreground">
             By continuing you agree to our{" "}
@@ -98,11 +184,11 @@ export function LoginFlow() {
             onClick={() => setPhase("identifier")}
           >
             <ArrowLeft className="size-4" />
-            Change {identifier.includes("@") ? "email" : "number"}
+            Change email
           </button>
           <h1 className="text-2xl">Enter the code</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Sent to <span className="text-foreground">{identifier}</span>
+            Sent to <span className="text-foreground">{email}</span>
           </p>
           <Input
             className="mt-6 text-center font-mono text-lg tracking-[0.4em]"
@@ -113,45 +199,18 @@ export function LoginFlow() {
           />
           <Button
             className="mt-5 h-11 w-full bg-cta text-cta-foreground hover:bg-cta-hover"
+            disabled={busy}
             onClick={verify}
           >
-            Verify
+            {busy ? "Verifying…" : "Verify"}
           </Button>
           <button
             className="mt-4 text-xs text-muted-foreground enabled:hover:text-heading disabled:opacity-60"
-            disabled={resendIn > 0}
-            onClick={() => setResendIn(30)}
+            disabled={resendIn > 0 || busy}
+            onClick={sendCode}
           >
             {resendIn > 0 ? `Resend code in ${resendIn}s` : "Resend code"}
           </button>
-        </div>
-      )}
-
-      {phase === "role" && (
-        <div className="mt-8">
-          <h1 className="text-2xl">Continue as</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Demo — pick a view to explore. Real accounts route automatically.
-          </p>
-          <div className="mt-6 flex flex-col gap-2">
-            {[
-              { label: "Patient", href: "/dashboard", icon: User },
-              { label: "Doctor", href: "/doctor/dashboard", icon: Stethoscope },
-              { label: "Admin", href: "/admin", icon: Check },
-            ].map(({ label, href, icon: Icon }) => (
-              <button
-                key={label}
-                onClick={() => router.push(href)}
-                className="flex items-center justify-between rounded-[--radius-md] border border-border bg-surface px-4 py-3 text-left text-sm font-medium text-heading hover:border-primary hover:bg-primary-subtle"
-              >
-                <span className="flex items-center gap-3">
-                  <Icon className="size-4 text-muted-foreground" />
-                  {label}
-                </span>
-                <ArrowRight className="size-4 text-muted-foreground" />
-              </button>
-            ))}
-          </div>
         </div>
       )}
 
@@ -164,24 +223,44 @@ export function LoginFlow() {
           <div className="mt-6 flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="name">Full name</Label>
-              <Input id="name" placeholder="Dr. …" />
+              <Input
+                id="name"
+                placeholder="Dr. …"
+                value={applyName}
+                onChange={(e) => setApplyName(e.target.value)}
+              />
             </div>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="reg">Medical registration number</Label>
-              <Input id="reg" placeholder="e.g. KMC/12345" />
+              <Input
+                id="reg"
+                placeholder="e.g. KMC/12345"
+                value={applyReg}
+                onChange={(e) => setApplyReg(e.target.value)}
+              />
             </div>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="spec">Specialty</Label>
-              <Select>
+              <Select value={applySpec} onValueChange={setApplySpec}>
                 <SelectTrigger id="spec">
                   <SelectValue placeholder="Select" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="general">General ophthalmology</SelectItem>
-                  <SelectItem value="cornea">Cornea & refractive</SelectItem>
-                  <SelectItem value="glaucoma">Glaucoma</SelectItem>
-                  <SelectItem value="retina">Retina</SelectItem>
-                  <SelectItem value="paediatric">Paediatric</SelectItem>
+                  <SelectItem value="General ophthalmology">
+                    General ophthalmology
+                  </SelectItem>
+                  <SelectItem value="Cornea & refractive">
+                    Cornea &amp; refractive
+                  </SelectItem>
+                  <SelectItem value="Glaucoma & general">
+                    Glaucoma &amp; general
+                  </SelectItem>
+                  <SelectItem value="Retina & vitreous">
+                    Retina &amp; vitreous
+                  </SelectItem>
+                  <SelectItem value="Paediatric ophthalmology">
+                    Paediatric ophthalmology
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -195,9 +274,10 @@ export function LoginFlow() {
           </div>
           <Button
             className="mt-5 h-11 w-full bg-cta text-cta-foreground hover:bg-cta-hover"
-            onClick={() => setPhase("applied")}
+            disabled={busy}
+            onClick={submitApplication}
           >
-            Submit application
+            {busy ? "Submitting…" : "Submit application"}
           </Button>
         </div>
       )}

@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import { LogOut } from "lucide-react";
 import { Logo } from "@/components/common/logo";
 import type { NavItem } from "@/lib/nav-config";
+import { signOut } from "@/lib/db/client-api";
 import { cn } from "@/lib/utils";
 
 export function AppSidebarNav({ items }: { items: NavItem[] }) {
@@ -43,6 +44,12 @@ export function AppSidebarNav({ items }: { items: NavItem[] }) {
 }
 
 export function AppSidebar({ items }: { items: NavItem[] }) {
+  const router = useRouter();
+  const handleSignOut = async () => {
+    await signOut();
+    router.replace("/login");
+    router.refresh();
+  };
   return (
     <aside className="hidden w-[248px] shrink-0 flex-col border-r border-sidebar-border bg-sidebar lg:flex">
       <div className="flex h-14 items-center border-b border-sidebar-border px-4">
@@ -50,13 +57,13 @@ export function AppSidebar({ items }: { items: NavItem[] }) {
       </div>
       <AppSidebarNav items={items} />
       <div className="border-t border-sidebar-border p-3">
-        <Link
-          href="/login"
-          className="flex items-center gap-3 rounded-[--radius-md] px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-surface-muted hover:text-heading"
+        <button
+          onClick={handleSignOut}
+          className="flex w-full items-center gap-3 rounded-[--radius-md] px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-surface-muted hover:text-heading"
         >
           <LogOut className="size-[18px]" strokeWidth={2} />
           Sign out
-        </Link>
+        </button>
       </div>
     </aside>
   );

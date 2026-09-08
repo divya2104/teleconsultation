@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Menu } from "lucide-react";
 import { Logo } from "@/components/common/logo";
+import { signOut } from "@/lib/db/client-api";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { NotificationsMenu } from "@/components/layout/notifications-menu";
@@ -24,6 +26,17 @@ import {
 import { AppSidebarNav } from "@/components/layout/app-sidebar";
 import type { NavItem } from "@/lib/nav-config";
 
+function initialsOf(name: string) {
+  return (
+    name
+      .split(/\s+/)
+      .map((w) => w[0] ?? "")
+      .join("")
+      .slice(0, 2)
+      .toUpperCase() || "CS"
+  );
+}
+
 export function AppTopbar({
   items,
   who = "Signed in",
@@ -31,6 +44,12 @@ export function AppTopbar({
   items: NavItem[];
   who?: string;
 }) {
+  const router = useRouter();
+  const handleSignOut = async () => {
+    await signOut();
+    router.replace("/login");
+    router.refresh();
+  };
   return (
     <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border bg-surface px-4">
       <Sheet>
@@ -61,7 +80,7 @@ export function AppTopbar({
             <button className="ml-1 rounded-full outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
               <Avatar className="size-8">
                 <AvatarFallback className="bg-surface-muted text-xs text-muted-foreground">
-                  CS
+                  {initialsOf(who)}
                 </AvatarFallback>
               </Avatar>
             </button>
@@ -74,9 +93,7 @@ export function AppTopbar({
             <DropdownMenuItem asChild>
               <Link href="/profile">Profile</Link>
             </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link href="/login">Sign out</Link>
-            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={handleSignOut}>Sign out</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

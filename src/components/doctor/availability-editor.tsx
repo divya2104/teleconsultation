@@ -5,12 +5,8 @@ import { toast } from "sonner";
 import { Plus, X } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
-import {
-  DAYS,
-  defaultAvailability,
-  type DayKey,
-  type Range,
-} from "@/lib/mock/doctor";
+import { DAYS, type DayKey, type Range } from "@/lib/mock/doctor";
+import { saveMyAvailability } from "@/lib/db/client-api";
 
 const SLOT_MIN = 20;
 
@@ -23,11 +19,16 @@ function countSlots(ranges: Range[]) {
   }, 0);
 }
 
-export function AvailabilityEditor() {
-  const [avail, setAvail] = useState<Record<DayKey, Range[]>>(
-    () => structuredClone(defaultAvailability),
+export function AvailabilityEditor({
+  initial,
+}: {
+  initial: Record<DayKey, Range[]>;
+}) {
+  const [avail, setAvail] = useState<Record<DayKey, Range[]>>(() =>
+    structuredClone(initial),
   );
   const [dirty, setDirty] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const update = (fn: (a: Record<DayKey, Range[]>) => void) => {
     setAvail((prev) => {
@@ -143,14 +144,21 @@ export function AvailabilityEditor() {
             {dirty ? "Unsaved changes" : "All changes saved"}
           </span>
           <Button
-            disabled={!dirty}
+            disabled={!dirty || saving}
             className="bg-cta text-cta-foreground hover:bg-cta-hover"
-            onClick={() => {
-              setDirty(false);
-              toast.success("Availability saved");
+            onClick={async () => {
+              setSaving(true);
+              const res = await saveMyAvailability(avail);
+              setSaving(false);
+              if (res.ok) {
+                setDirty(false);
+                toast.success("Availability saved");
+              } else {
+                toast.error(res.error ?? "Couldn't save availability");
+              }
             }}
           >
-            Save availability
+            {saving ? "Saving…" : "Save availability"}
           </Button>
         </div>
       </div>

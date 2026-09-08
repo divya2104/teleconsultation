@@ -61,10 +61,12 @@ export function AppointmentCard({
       {featured && !appt.intakeComplete ? (
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-[--radius-md] bg-triage-review-bg px-3 py-2.5">
           <p className="text-xs font-medium text-triage-review-fg">
-            Complete your 5-minute self-test before this consult.
+            Finish your self-test — your doctor opens the consult with it.
           </p>
           <Button asChild size="sm" variant="outline">
-            <Link href="/intake/questionnaire">Start self-test</Link>
+            <Link href={`/intake/questionnaire?appt=${appt.id}`}>
+              Finish self-test
+            </Link>
           </Button>
         </div>
       ) : null}

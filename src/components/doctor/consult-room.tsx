@@ -15,7 +15,7 @@ import { Label } from "@/components/ui/label";
 import { TriageBadge } from "@/components/common/triage-badge";
 import { DataField } from "@/components/common/data-field";
 import { EmergencyBanner } from "@/components/common/emergency-banner";
-import { getTriage } from "@/lib/mock/doctor";
+import type { TriageRecord } from "@/lib/mock/doctor";
 
 const rxSchema = z.object({
   diagnosis: z.string().min(3, "Enter a diagnosis"),
@@ -32,9 +32,16 @@ const rxSchema = z.object({
 });
 type RxForm = z.infer<typeof rxSchema>;
 
-export function ConsultRoom({ id }: { id: string }) {
+export function ConsultRoom({
+  id,
+  triage,
+  photoUrls,
+}: {
+  id: string;
+  triage: TriageRecord;
+  photoUrls: string[];
+}) {
   const router = useRouter();
-  const triage = getTriage(id);
   const [issued, setIssued] = useState(false);
 
   const form = useForm<RxForm>({
@@ -219,14 +226,24 @@ export function ConsultRoom({ id }: { id: string }) {
             Photo screen — aid only
           </h3>
           <div className="mt-2 flex gap-2">
-            {[0, 1, 2].map((i) => (
-              <div
-                key={i}
-                className="grid size-16 place-items-center rounded-[--radius-sm] border border-border bg-surface-muted text-muted-foreground"
-              >
-                <ImageIcon className="size-5" strokeWidth={1.5} />
-              </div>
-            ))}
+            {(photoUrls.length ? photoUrls : [null, null, null]).map((u, i) =>
+              u ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  key={i}
+                  src={u}
+                  alt={`Eye photo ${i + 1}`}
+                  className="size-16 rounded-[--radius-sm] border border-border object-cover"
+                />
+              ) : (
+                <div
+                  key={i}
+                  className="grid size-16 place-items-center rounded-[--radius-sm] border border-border bg-surface-muted text-muted-foreground"
+                >
+                  <ImageIcon className="size-5" strokeWidth={1.5} />
+                </div>
+              ),
+            )}
           </div>
           <ul className="mt-2 space-y-1 text-xs text-muted-foreground-strong">
             {triage.photoNotes.map((n, i) => (

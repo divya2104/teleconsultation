@@ -12,24 +12,24 @@ import {
   PrescriptionCard,
   RecallCard,
 } from "@/components/patient/cards";
-import {
-  appointments,
-  prescriptions,
-  recalls,
-} from "@/lib/mock/patient";
+// TODO(mock): prescriptions + recalls are a backend follow-up
+import { prescriptions, recalls, type Appointment } from "@/lib/mock/patient";
 
 const TABS = ["overview", "appointments", "prescriptions", "recalls"] as const;
 type Tab = (typeof TABS)[number];
 
-const upcoming = appointments.filter(
-  (a) => a.status === "upcoming" || a.status === "live",
-);
-const past = appointments.filter(
-  (a) => a.status !== "upcoming" && a.status !== "live",
-);
-
-export function DashboardTabs() {
+export function DashboardTabs({
+  appointments,
+}: {
+  appointments: Appointment[];
+}) {
   const router = useRouter();
+  const upcoming = appointments.filter(
+    (a) => a.status === "upcoming" || a.status === "live",
+  );
+  const past = appointments.filter(
+    (a) => a.status !== "upcoming" && a.status !== "live",
+  );
   const params = useSearchParams();
   const raw = params.get("tab");
   const tab: Tab = (TABS as readonly string[]).includes(raw ?? "")

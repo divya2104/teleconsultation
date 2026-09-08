@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { QueueRow } from "@/components/doctor/queue-row";
 import { EmptyState } from "@/components/common/empty-state";
 import { ListChecks } from "lucide-react";
-import { queue } from "@/lib/mock/doctor";
+import type { QueueItem } from "@/lib/mock/doctor";
 import { cn } from "@/lib/utils";
 
 const FILTERS = [
@@ -16,13 +16,13 @@ const FILTERS = [
 ] as const;
 type FilterKey = (typeof FILTERS)[number]["key"];
 
-export function QueueClient() {
+export function QueueClient({ items }: { items: QueueItem[] }) {
   const [filter, setFilter] = useState<FilterKey>("upcoming");
   const [q, setQ] = useState("");
   const [now] = useState(() => Date.now());
 
   const rows = useMemo(() => {
-    return queue
+    return items
       .filter((item) => {
         if (filter === "completed") return item.status === "completed" || item.status === "no-show";
         if (filter === "past-due")
@@ -33,7 +33,7 @@ export function QueueClient() {
         q ? item.patientName.toLowerCase().includes(q.toLowerCase()) : true,
       )
       .sort((a, b) => +new Date(a.slot) - +new Date(b.slot));
-  }, [filter, q, now]);
+  }, [items, filter, q, now]);
 
   return (
     <div className="flex flex-col gap-6">

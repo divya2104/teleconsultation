@@ -12,32 +12,38 @@ export function StepProgress({
   className?: string;
 }) {
   return (
-    <ol className={cn("flex items-center gap-2", className)}>
+    <ol className={cn("flex items-center gap-2.5", className)}>
       {steps.map((label, i) => {
         const done = i < current;
         const active = i === current;
         return (
-          <li key={label} className="flex items-center gap-2">
+          <li key={label} className="flex items-center gap-2.5">
             <span
               className={cn(
-                "grid size-6 place-items-center rounded-full text-[11px] font-semibold tabular-nums transition-colors",
-                done && "bg-primary text-primary-foreground",
-                active && "bg-primary-subtle text-primary-subtle-foreground ring-1 ring-border-brand",
-                !done && !active && "bg-surface-muted text-muted-foreground",
+                "grid size-7 shrink-0 place-items-center rounded-full text-xs font-semibold tabular-nums transition-colors",
+                (done || active) && "bg-primary text-primary-foreground",
+                !done && !active &&
+                  "bg-primary-subtle text-primary-subtle-foreground",
               )}
             >
-              {done ? <Check className="size-3.5" strokeWidth={3} /> : i + 1}
+              {done ? <Check className="size-4" strokeWidth={3} /> : i + 1}
             </span>
             <span
               className={cn(
                 "hidden text-xs font-medium sm:inline",
-                active ? "text-heading" : "text-muted-foreground",
+                done || active ? "text-heading" : "text-muted-foreground",
               )}
             >
               {label}
             </span>
             {i < steps.length - 1 ? (
-              <span className="mx-1 h-px w-6 bg-border" aria-hidden />
+              <span
+                className={cn(
+                  "mx-1 h-0.5 w-8 rounded-full transition-colors",
+                  done ? "bg-primary" : "bg-border",
+                )}
+                aria-hidden
+              />
             ) : null}
           </li>
         );

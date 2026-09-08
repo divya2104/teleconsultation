@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&display=swap");
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -254,4 +256,77 @@
       scroll-behavior: auto !important;
     }
   }
+}
+
+/* ============================================================
+   "How It Works" redesign — ported near-verbatim from a Figma
+   Make export. Its own token set + fonts (Outfit / DM Mono),
+   scoped to .hiw-scope so it never touches the Calm Care system.
+   ============================================================ */
+.hiw-scope {
+  --teal-900: #163f3f;
+  --teal-700: #1e6363;
+  --teal-600: #2a8080;
+  --teal-500: #36a0a0;
+  --teal-400: #5abcbc;
+  --teal-300: #89d4d4;
+  --teal-200: #b8e8e8;
+  --teal-100: #d9f2f2;
+  --teal-50: #edfafa;
+
+  --mint-bg: #f0faf9;
+  --mint-alt: #e6f5f4;
+
+  --green-cta: #3a7d55;
+  --green-cta-hov: #2f6645;
+  --green-light: #e8f5ee;
+
+  --navy: #0f2d2d;
+  --navy-mid: #1a3f3f;
+  --body-text: #2c4a4a;
+  --muted-text: #5a7878;
+
+  --sand-50: #faf7f2;
+  --sand-100: #f2ede3;
+  --warm-neutral: #e8e0d0;
+
+  --card-bg: #ffffff;
+  --card-border: rgba(42, 128, 128, 0.12);
+  --card-shadow: 0 2px 16px rgba(42, 128, 128, 0.08);
+
+  --radius-card: 20px;
+  --radius-chip: 100px;
+
+  --step-node-bg: var(--teal-500);
+  --step-node-text: #ffffff;
+  --section-alt-bg: var(--mint-alt);
+  --illus-primary: var(--teal-500);
+  --illus-secondary: var(--sand-100);
+  --timeline-line: var(--teal-200);
+}
+
+@keyframes hiwFadeRise {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.hiw-scope .anim-section {
+  animation: hiwFadeRise 0.55s ease both;
+}
+.hiw-scope .anim-delay-1 {
+  animation-delay: 0.08s;
+}
+.hiw-scope .anim-delay-2 {
+  animation-delay: 0.16s;
+}
+.hiw-scope .anim-delay-3 {
+  animation-delay: 0.24s;
+}
+.hiw-scope .anim-delay-4 {
+  animation-delay: 0.32s;
 }

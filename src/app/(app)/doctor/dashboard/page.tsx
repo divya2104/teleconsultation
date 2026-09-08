@@ -3,23 +3,36 @@ import { Tile } from "@/components/common/tile";
 import { QueueRow } from "@/components/doctor/queue-row";
 import { EmptyState } from "@/components/common/empty-state";
 import { CalendarDays } from "lucide-react";
-import { queue, todayTiles } from "@/lib/mock/doctor";
+import { doctorQueue } from "@/lib/db/queries";
 
 export const metadata = { title: "Doctor dashboard" };
+export const dynamic = "force-dynamic";
 
-export default function Page() {
-  const t = todayTiles();
+const sameDay = (a: Date, b: Date) => a.toDateString() === b.toDateString();
+
+export default async function Page() {
+  const queue = await doctorQueue();
+  const now = new Date();
+
   const today = queue
-    .filter((q) => new Date(q.slot).toDateString() === new Date().toDateString())
+    .filter((q) => sameDay(new Date(q.slot), now))
     .sort((a, b) => +new Date(a.slot) - +new Date(b.slot));
-  const upcoming = today.filter((q) => q.status === "upcoming" || q.status === "live");
-  const attention = upcoming.filter((q) => q.triage === "urgent" || q.inconclusiveAI);
+  const upcoming = today.filter(
+    (q) => q.status === "upcoming" || q.status === "live",
+  );
+  const attention = upcoming.filter(
+    (q) => q.triage === "urgent" || q.inconclusiveAI,
+  );
+  const nextUpcoming = upcoming[0];
+  const nextInMin = nextUpcoming
+    ? Math.max(0, Math.round((+new Date(nextUpcoming.slot) - Date.now()) / 60000))
+    : null;
 
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
         title="Today"
-        description={new Date().toLocaleDateString("en-IN", {
+        description={now.toLocaleDateString("en-IN", {
           weekday: "long",
           day: "numeric",
           month: "long",
@@ -27,13 +40,20 @@ export default function Page() {
       />
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Tile label="Scheduled" value={t.scheduled} />
-        <Tile label="Completed" value={t.completed} />
-        <Tile label="No-shows" value={t.noShows} hint="last 7 days" />
+        <Tile label="Scheduled" value={today.length} />
+        <Tile
+          label="Completed"
+          value={today.filter((q) => q.status === "completed").length}
+        />
+        <Tile
+          label="No-shows"
+          value={queue.filter((q) => q.status === "no-show").length}
+          hint="all time"
+        />
         <Tile
           label="Next consult"
-          value={t.nextInMin === null ? "—" : `${t.nextInMin}m`}
-          hint={t.nextInMin === null ? "nothing upcoming" : "from now"}
+          value={nextInMin === null ? "—" : `${nextInMin}m`}
+          hint={nextInMin === null ? "nothing upcoming" : "from now"}
         />
       </div>
 

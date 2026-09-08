@@ -1,29 +1,30 @@
-"use client";
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import type { Role } from "@/lib/nav-config";
+import { AppChrome } from "@/components/layout/app-chrome";
 
-import { usePathname } from "next/navigation";
-import { AppShell } from "@/components/layout/app-shell";
-import { patientNav, doctorNav, adminNav } from "@/lib/nav-config";
-
-export default function AppGroupLayout({
+export default async function AppGroupLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const p = usePathname();
-  const isDoctor = p.startsWith("/doctor");
-  const isAdmin = p.startsWith("/admin");
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
 
-  const items = isDoctor ? doctorNav : isAdmin ? adminNav : patientNav;
-  const who = isDoctor
-    ? "Dr. Anand Rao"
-    : isAdmin
-      ? "Admin — Ops"
-      : "Priya Sharma";
-  const wide = isAdmin || p.startsWith("/doctor/queue");
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role, full_name")
+    .eq("id", user.id)
+    .single();
+
+  const role = (profile?.role ?? "patient") as Role;
 
   return (
-    <AppShell items={items} who={who} containerSize={wide ? "wide" : "content"}>
+    <AppChrome role={role} who={profile?.full_name ?? "You"}>
       {children}
-    </AppShell>
+    </AppChrome>
   );
 }

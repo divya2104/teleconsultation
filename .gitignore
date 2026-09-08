@@ -4,5 +4,10 @@ node_modules/
 next-env.d.ts
 *.tsbuildinfo
 .env*.local
+.env
 out/
 build/
+
+# Supabase CLI local state
+supabase/.branches/
+supabase/.temp/

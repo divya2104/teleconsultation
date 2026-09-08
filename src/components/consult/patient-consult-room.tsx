@@ -6,13 +6,12 @@ import { useRouter } from "next/navigation";
 import { Camera, Mic, Wifi, Check, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CallStage } from "@/components/consult/call-stage";
-import { appointments, fmtDateTime } from "@/lib/mock/patient";
+import { fmtDateTime, type Appointment } from "@/lib/mock/patient";
 
 type Phase = "device-check" | "waiting" | "live" | "post";
 
-export function PatientConsultRoom({ id }: { id: string }) {
+export function PatientConsultRoom({ appt }: { appt: Appointment }) {
   const router = useRouter();
-  const appt = appointments.find((a) => a.id === id) ?? appointments[0];
   const [phase, setPhase] = useState<Phase>("device-check");
   const [degraded, setDegraded] = useState(false);
 

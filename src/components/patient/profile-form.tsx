@@ -24,7 +24,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { patientProfile, fmtDate } from "@/lib/mock/patient";
+import { fmtDate, type PatientProfile } from "@/lib/mock/patient";
+import { updateProfile } from "@/lib/db/client-api";
 
 function Card({
   title,
@@ -46,9 +47,25 @@ function Card({
   );
 }
 
-export function ProfileForm() {
-  const [notify, setNotify] = useState(patientProfile.notify);
-  const [diabetes, setDiabetes] = useState(patientProfile.diabetes);
+export function ProfileForm({ profile }: { profile: PatientProfile }) {
+  const [name, setName] = useState(profile.name);
+  const [notify, setNotify] = useState(profile.notify);
+  const [diabetes, setDiabetes] = useState(profile.diabetes);
+  const [saving, setSaving] = useState(false);
+
+  const save = async () => {
+    setSaving(true);
+    const res = await updateProfile({
+      full_name: name,
+      diabetes,
+      notify_whatsapp: notify.whatsapp,
+      notify_sms: notify.sms,
+      notify_email: notify.email,
+    });
+    setSaving(false);
+    if (res.ok) toast.success("Profile saved");
+    else toast.error(res.error ?? "Couldn't save");
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -61,16 +78,16 @@ export function ProfileForm() {
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="name">Full name</Label>
-            <Input id="name" defaultValue={patientProfile.name} />
+            <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
           </div>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="phone">Mobile number</Label>
-            <Input id="phone" defaultValue={patientProfile.phone} disabled />
+            <Input id="phone" defaultValue={profile.phone} disabled />
             <span className="text-xs text-muted-foreground">Verify to change</span>
           </div>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="email">Email</Label>
-            <Input id="email" defaultValue={patientProfile.email} disabled />
+            <Input id="email" defaultValue={profile.email} disabled />
             <span className="text-xs text-muted-foreground">Verify to change</span>
           </div>
         </div>
@@ -126,7 +143,7 @@ export function ProfileForm() {
         description="What you've agreed to and when. You can withdraw consent for data processing."
       >
         <ul className="flex flex-col divide-y divide-border">
-          {patientProfile.consents.map((c) => (
+          {profile.consents.map((c) => (
             <li key={c.label} className="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0">
               <div>
                 <p className="text-sm text-foreground">{c.label}</p>
@@ -184,9 +201,10 @@ export function ProfileForm() {
       <div className="flex justify-end">
         <Button
           className="bg-cta text-cta-foreground hover:bg-cta-hover"
-          onClick={() => toast.success("Profile saved")}
+          onClick={save}
+          disabled={saving}
         >
-          Save changes
+          {saving ? "Saving…" : "Save changes"}
         </Button>
       </div>
     </div>

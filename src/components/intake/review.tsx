@@ -1,12 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { Camera } from "lucide-react";
+import { NavButtons } from "@/components/intake/nav-buttons";
 import { TriageBadge } from "@/components/common/triage-badge";
+import { Panel, StatTile } from "@/components/intake/question-fields";
 import { QUESTIONS, scoreUrgency } from "@/lib/mock/intake";
 import { readDraft, clearDraft, type IntakeDraft } from "@/lib/intake-store";
+import { uploadIntakePhotos, submitTriage } from "@/lib/db/client-api";
 
 const LEVEL_TO_STATE = ["normal", "review", "review", "urgent"] as const;
 
@@ -15,9 +18,43 @@ function labelFor(qid: string, value: string) {
   return q?.options?.find((o) => o.value === value)?.label ?? value;
 }
 
+function Section({
+  title,
+  aside,
+  children,
+}: {
+  title: string;
+  aside?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="border-t border-border py-6 first:border-t-0 first:pt-0 last:pb-0">
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="font-heading text-base font-semibold text-heading">
+          {title}
+        </h2>
+        {aside}
+      </div>
+      <div className="mt-3">{children}</div>
+    </div>
+  );
+}
+
+function KeyValueRow({ q, a }: { q: string; a: string }) {
+  return (
+    <div className="grid gap-x-8 gap-y-1 py-1.5 text-sm sm:grid-cols-[minmax(0,340px)_minmax(0,1fr)]">
+      <dt className="text-primary">{q}</dt>
+      <dd className="text-heading">{a}</dd>
+    </div>
+  );
+}
+
 export function Review() {
   const router = useRouter();
+  const params = useSearchParams();
+  const appt = params.get("appt");
   const [draft, setDraft] = useState<IntakeDraft | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     setDraft(readDraft());
@@ -28,120 +65,118 @@ export function Review() {
   const { level, redFlags } = scoreUrgency(draft.answers);
 
   const submit = () => {
-    // ponytail: no backend yet — clear the draft and hand back to booking.
-    clearDraft();
-    toast.success("Self-test submitted — added to your booking");
-    router.push("/book");
-    return false; // NavButtons has no next step anyway
+    if (submitting) return false;
+    if (!appt) {
+      toast.error("Missing booking reference — return to your dashboard.");
+      return false;
+    }
+    setSubmitting(true);
+    void (async () => {
+      const d = readDraft();
+      const paths = d.photos?.length
+        ? await uploadIntakePhotos(appt, d.photos)
+        : [];
+      const res = await submitTriage({
+        appointmentId: appt,
+        answers: d.answers,
+        acuity: {
+          right: d.acuity?.right ?? "",
+          left: d.acuity?.left ?? "",
+          distanceOk: d.acuity?.distanceOk,
+        },
+        photoPaths: paths,
+      });
+      if (!res.ok) {
+        setSubmitting(false);
+        toast.error(res.error ?? "Couldn't submit the self-test.");
+        return;
+      }
+      clearDraft();
+      toast.success("Self-test submitted — your doctor will have this ready");
+      router.push(`/booking-confirmed?appt=${appt}`);
+    })();
+    return false; // NavButtons: we navigate ourselves on success
   };
 
   return (
-    <div>
-      <h1 className="text-2xl">Review your self-test</h1>
-      <p className="mt-1 text-sm text-muted-foreground">
-        This becomes the triage summary your doctor opens the consult with.
-      </p>
+    <>
+      <Panel>
+        <h1 className="text-2xl">Review your self-test</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          This becomes the triage summary your doctor opens the consult with.
+        </p>
 
-      <div className="mt-6 flex flex-col gap-4">
-        <section className="rounded-[--radius-lg] border border-border bg-surface p-5">
-          <div className="flex items-center justify-between">
-            <h2 className="font-heading text-base font-semibold text-heading">
-              Provisional urgency
-            </h2>
-            <TriageBadge state={LEVEL_TO_STATE[level]} />
-          </div>
-          {redFlags.length ? (
-            <p className="mt-2 text-sm text-triage-urgent-fg">
-              Flagged: {redFlags.join(", ")}. Advised to seek in-person emergency
-              care; booking continues with this flag.
-            </p>
-          ) : (
-            <p className="mt-2 text-sm text-muted-foreground">
-              No emergency red-flag phrases detected.
-            </p>
-          )}
-        </section>
-
-        <section className="rounded-[--radius-lg] border border-border bg-surface p-5">
-          <h2 className="font-heading text-base font-semibold text-heading">
-            Your answers
-          </h2>
-          <dl className="mt-3 space-y-2 text-sm">
-            {QUESTIONS.map((q) => {
-              const a = draft.answers[q.id];
-              if (!a || (Array.isArray(a) && !a.length)) return null;
-              const text = Array.isArray(a)
-                ? a.map((v) => labelFor(q.id, v)).join(", ")
-                : q.type === "text"
-                  ? (a as string)
-                  : labelFor(q.id, a as string);
-              return (
-                <div key={q.id} className="flex flex-col sm:flex-row sm:gap-3">
-                  <dt className="shrink-0 text-muted-foreground sm:w-56">{q.text}</dt>
-                  <dd className="text-foreground">{text}</dd>
-                </div>
-              );
-            })}
-          </dl>
-        </section>
-
-        <section className="rounded-[--radius-lg] border border-border bg-surface p-5">
-          <h2 className="font-heading text-base font-semibold text-heading">
-            Vision check
-          </h2>
-          <div className="mt-3 grid grid-cols-2 gap-3">
-            <div className="rounded-[--radius-sm] border border-border p-3">
-              <p className="font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
-                Right eye
+        <div className="mt-8 flex flex-col">
+          <Section
+            title="Provisional urgency"
+            aside={<TriageBadge state={LEVEL_TO_STATE[level]} />}
+          >
+            {redFlags.length ? (
+              <p className="text-sm text-triage-urgent-fg">
+                Flagged: {redFlags.join(", ")}. Advised to seek in-person
+                emergency care; booking continues with this flag.
               </p>
-              <p className="mt-1 font-mono text-lg tabular-nums text-heading">
-                {draft.acuity?.right || "—"}
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                No emergency red-flag phrases detected.
               </p>
+            )}
+          </Section>
+
+          <Section title="Your answers">
+            <dl className="space-y-2">
+              {QUESTIONS.map((q) => {
+                const a = draft.answers[q.id];
+                if (!a || (Array.isArray(a) && !a.length)) return null;
+                const text = Array.isArray(a)
+                  ? a.map((v) => labelFor(q.id, v)).join(", ")
+                  : q.type === "text"
+                    ? (a as string)
+                    : labelFor(q.id, a as string);
+                return <KeyValueRow key={q.id} q={q.text} a={text} />;
+              })}
+            </dl>
+          </Section>
+
+          <Section title="Vision check">
+            <div className="grid grid-cols-2 gap-3">
+              <StatTile label="Right eye" value={draft.acuity?.right || "—"} />
+              <StatTile label="Left eye" value={draft.acuity?.left || "—"} />
             </div>
-            <div className="rounded-[--radius-sm] border border-border p-3">
-              <p className="font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
-                Left eye
-              </p>
-              <p className="mt-1 font-mono text-lg tabular-nums text-heading">
-                {draft.acuity?.left || "—"}
-              </p>
-            </div>
-          </div>
-        </section>
+          </Section>
 
-        <section className="rounded-[--radius-lg] border border-border bg-surface p-5">
-          <h2 className="font-heading text-base font-semibold text-heading">
-            Photos
-          </h2>
-          {draft.photos?.length ? (
-            <div className="mt-3 flex gap-3">
-              {draft.photos.map((src, i) => (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  key={i}
-                  src={src}
-                  alt={`Eye photo ${i + 1}`}
-                  className="size-20 rounded-[--radius-sm] border border-border object-cover"
-                />
-              ))}
+          <Section title="Photos">
+            <div className="flex gap-3">
+              {[0, 1, 2].map((i) => {
+                const src = draft.photos?.[i];
+                return src ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    key={i}
+                    src={src}
+                    alt={`Eye photo ${i + 1}`}
+                    className="size-20 rounded-[var(--radius-md)] border border-border object-cover"
+                  />
+                ) : (
+                  <div
+                    key={i}
+                    className="grid size-20 place-items-center rounded-[var(--radius-md)] border border-border bg-surface-muted text-muted-foreground"
+                  >
+                    <Camera className="size-5" strokeWidth={1.5} />
+                  </div>
+                );
+              })}
             </div>
-          ) : (
-            <p className="mt-2 text-sm text-muted-foreground">No photos added.</p>
-          )}
-        </section>
-      </div>
+          </Section>
+        </div>
+      </Panel>
 
-      <div className="mt-8 flex items-center justify-between border-t border-border pt-5">
-        <Button variant="ghost" onClick={() => router.push("/intake/photos")}>
-          Back
-        </Button>
-        <Button
-          onClick={submit}
-          className="bg-cta text-cta-foreground hover:bg-cta-hover"
-        >
-          Submit self-test
-        </Button>
-      </div>
-    </div>
+      <NavButtons
+        step="review"
+        canContinue={!submitting}
+        continueLabel={submitting ? "Submitting…" : "Submit self-test"}
+        onContinue={submit}
+      />
+    </>
   );
 }

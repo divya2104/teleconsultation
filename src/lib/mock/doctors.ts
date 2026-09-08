@@ -5,6 +5,8 @@ export type Doctor = {
   languages: string[];
   regNo: string;
   bio: string;
+  /** optional headshot / clinic image — falls back to an initials avatar */
+  photo?: string;
   /** ISO datetimes, next available slots */
   slots: string[];
 };
@@ -52,6 +54,33 @@ export const doctors: Doctor[] = [
     regNo: "MMC/98765",
     bio: "Glaucoma and general ophthalmology. Focus on early detection and long-term follow-up.",
     slots: slotsFrom([2, 3, 5], [10, 14, 17]),
+  },
+  {
+    id: "doc_patel",
+    name: "Dr. Raj Patel",
+    specialty: "Paediatric ophthalmology",
+    languages: ["English", "Gujarati", "Hindi"],
+    regNo: "GMC/44556",
+    bio: "Paediatric eye care — squint, amblyopia and childhood refractive problems.",
+    slots: slotsFrom([1, 3, 4], [10, 11, 15, 16]),
+  },
+  {
+    id: "doc_sharma",
+    name: "Dr. Priya Sharma",
+    specialty: "Retina & vitreous",
+    languages: ["English", "Hindi", "Punjabi"],
+    regNo: "PMC/77889",
+    bio: "Medical and surgical retina, with a focus on diabetic eye disease.",
+    slots: slotsFrom([2, 4, 5], [9, 12, 16]),
+  },
+  {
+    id: "doc_singh",
+    name: "Dr. Vikram Singh",
+    specialty: "Oculoplastics",
+    languages: ["English", "Hindi"],
+    regNo: "DMC/33221",
+    bio: "Eyelid, tear-duct and orbit surgery; also sees general adult eye complaints.",
+    slots: slotsFrom([1, 2, 5], [10, 14, 17]),
   },
 ];
 

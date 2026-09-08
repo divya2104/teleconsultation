@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { INTAKE_STEPS, type IntakeStep } from "@/lib/mock/intake";
@@ -17,6 +17,10 @@ export function NavButtons({
   onContinue?: () => void | boolean;
 }) {
   const router = useRouter();
+  const params = useSearchParams();
+  const appt = params.get("appt");
+  const qs = appt ? `?appt=${appt}` : "";
+
   const i = INTAKE_STEPS.indexOf(step);
   const prev = i > 0 ? INTAKE_STEPS[i - 1] : null;
   const nextStep = i < INTAKE_STEPS.length - 1 ? INTAKE_STEPS[i + 1] : null;
@@ -26,14 +30,16 @@ export function NavButtons({
       const ok = onContinue();
       if (ok === false) return;
     }
-    if (nextStep) router.push(`/intake/${nextStep}`);
+    if (nextStep) router.push(`/intake/${nextStep}${qs}`);
   };
 
   return (
     <div className="mt-8 flex items-center justify-between border-t border-border pt-5">
       <Button
         variant="ghost"
-        onClick={() => (prev ? router.push(`/intake/${prev}`) : router.push("/book"))}
+        onClick={() =>
+          prev ? router.push(`/intake/${prev}${qs}`) : router.push("/dashboard")
+        }
       >
         <ArrowLeft className="size-4" />
         Back
