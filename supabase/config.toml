@@ -260,17 +260,20 @@ content_path = "./supabase/templates/magic_link.html"
 
 [auth.sms]
 # Allow/disallow new user signups via SMS to your project.
-enable_signup = false
+enable_signup = true
 # If enabled, users need to confirm their phone number before signing in.
 enable_confirmations = false
 # Template for sending OTP to users
-template = "Your code is {{ .Code }}"
+template = "Your ClearSight sign-in code is {{ .Code }}"
 # Controls the minimum amount of time that must pass before sending another sms otp.
 max_frequency = "5s"
 
-# Use pre-defined map of phone number to OTP for testing.
-# [auth.sms.test_otp]
-# 4152127777 = "123456"
+# Local Supabase can't send real SMS. These numbers verify offline with the
+# fixed code below so the phone-OTP flow is testable without Twilio.
+# The /login field sends +91XXXXXXXXXX; the map key drops the "+".
+[auth.sms.test_otp]
+919999999999 = "123456"
+919888888888 = "123456"
 
 # Configure logged in session timeouts.
 # [auth.sessions]
@@ -290,12 +293,16 @@ max_frequency = "5s"
 # uri = "pg-functions://<database>/<schema>/<hook_name>"
 
 # Configure one of the supported SMS providers: `twilio`, `twilio_verify`, `messagebird`, `textlocal`, `vonage`.
+# GoTrue only turns phone login ON when a provider block is enabled. Locally the
+# placeholders below are never contacted — the [auth.sms.test_otp] numbers are
+# resolved by GoTrue before any provider call. For production, replace the
+# placeholders with real values and keep the auth token in an env var:
+#   auth_token = "env(SUPABASE_AUTH_SMS_TWILIO_AUTH_TOKEN)"
 [auth.sms.twilio]
-enabled = false
-account_sid = ""
-message_service_sid = ""
-# DO NOT commit your Twilio auth token to git. Use environment variable substitution instead:
-auth_token = "env(SUPABASE_AUTH_SMS_TWILIO_AUTH_TOKEN)"
+enabled = true
+account_sid = "AClocalplaceholderlocalplaceholder00"
+message_service_sid = "MGlocalplaceholderlocalplaceholder00"
+auth_token = "local-unused-test-otp-bypasses-provider"
 
 # Multi-factor-authentication is available to Supabase Pro plan.
 [auth.mfa]

@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { StickyWizardFooter } from "@/components/common/sticky-wizard-footer";
 import { INTAKE_STEPS, type IntakeStep } from "@/lib/mock/intake";
 
 export function NavButtons({
@@ -34,7 +35,7 @@ export function NavButtons({
   };
 
   return (
-    <div className="mt-8 flex items-center justify-between border-t border-border pt-5">
+    <StickyWizardFooter>
       <Button
         variant="ghost"
         onClick={() =>
@@ -52,6 +53,6 @@ export function NavButtons({
         {continueLabel}
         <ArrowRight className="size-4" />
       </Button>
-    </div>
+    </StickyWizardFooter>
   );
 }

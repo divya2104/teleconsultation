@@ -7,6 +7,7 @@ import { ArrowLeft, ArrowRight, CircleAlert } from "lucide-react";
 import { FocusShell } from "@/components/layout/focus-shell";
 import { StepProgress } from "@/components/common/step-progress";
 import { DoctorSlotPicker } from "@/components/booking/doctor-slot-picker";
+import { StickyWizardFooter } from "@/components/common/sticky-wizard-footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -119,6 +120,7 @@ export function BookingFlow() {
       exitHref="/dashboard"
     >
       {phase === "reason" && (
+        <>
         <div
           className="rounded-[var(--radius-lg)] border border-border bg-surface p-6 sm:p-7"
           style={{ boxShadow: "var(--shadow-sm)" }}
@@ -171,14 +173,14 @@ export function BookingFlow() {
             You&apos;ll do a 5-minute guided self-test right after payment — the
             doctor opens your consult with the summary ready.
           </p>
-
-          <FlowNav
-            onBack={() => router.push("/dashboard")}
-            backLabel="Cancel"
-            onNext={() => setPhase("doctor")}
-            nextDisabled={!symptom}
-          />
         </div>
+        <FlowNav
+          onBack={() => router.push("/dashboard")}
+          backLabel="Cancel"
+          onNext={() => setPhase("doctor")}
+          nextDisabled={!symptom}
+        />
+        </>
       )}
 
       {phase === "review" && (
@@ -262,7 +264,7 @@ function FlowNav({
   nextDisabled?: boolean;
 }) {
   return (
-    <div className="mt-8 flex items-center justify-between border-t border-border pt-5">
+    <StickyWizardFooter>
       <Button variant="ghost" onClick={onBack}>
         <ArrowLeft className="size-4" />
         {backLabel}
@@ -275,6 +277,6 @@ function FlowNav({
         {nextLabel}
         <ArrowRight className="size-4" />
       </Button>
-    </div>
+    </StickyWizardFooter>
   );
 }

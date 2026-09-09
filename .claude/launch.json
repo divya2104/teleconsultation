@@ -6,6 +6,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
       "port": 3000
+    },
+    {
+      "name": "clearsight-prod",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "start:built"],
+      "port": 3000
     }
   ]
 }

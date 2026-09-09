@@ -16,6 +16,7 @@ import {
 export type NavItem = { label: string; href: string; icon: LucideIcon };
 
 export const marketingNav: { label: string; href: string }[] = [
+  { label: "Home", href: "/" },
   { label: "How it works", href: "/how-it-works" },
   { label: "For doctors", href: "/for-doctors" },
   { label: "Pricing", href: "/pricing" },

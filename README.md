@@ -28,10 +28,21 @@ Then:
 npm run dev
 ```
 
-### Signing in (email OTP)
+### Signing in (email or phone OTP)
 
-`/login` sends a 6-digit code by email. Locally it lands in **Inbucket** at
-http://127.0.0.1:54324 — open the message and copy the code.
+`/login` takes one field — an email address **or** a 10-digit Indian mobile
+number (sent to Supabase as `+91XXXXXXXXXX`) — and sends a 6-digit code.
+
+- **Email:** the code lands in **Inbucket** at http://127.0.0.1:54324 — open
+  the message and copy it.
+- **Phone:** local Supabase can't send real SMS, so only the numbers in
+  `[auth.sms.test_otp]` (`supabase/config.toml`) work offline —
+  `9999999999` or `9888888888`, code `123456`. For production, set
+  `[auth.sms.twilio] enabled = true` with `account_sid` /
+  `message_service_sid` / `auth_token = env(SUPABASE_AUTH_SMS_TWILIO_AUTH_TOKEN)`.
+
+Phone and email are separate identities — the same person signing in with each
+gets two accounts (account linking is not wired).
 
 Seeded accounts (`supabase/seed.sql`):
 
@@ -40,7 +51,7 @@ Seeded accounts (`supabase/seed.sql`):
 | `doctor@clearsight.test`| doctor |
 | `admin@clearsight.test` | admin  |
 
-Any other email signs up as a **patient**.
+Any other email or phone signs up as a **patient**.
 
 ## Deploy
 

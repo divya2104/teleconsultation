@@ -22,6 +22,29 @@ type Phase = "identifier" | "otp" | "apply" | "applied";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+type Channel =
+  | { channel: "email"; email: string }
+  | { channel: "phone"; phone: string; display: string }
+  | { channel: "invalid" };
+
+// One smart field: an "@" means email; otherwise a bare 10-digit Indian mobile
+// (spaces/dashes ignored) becomes +91XXXXXXXXXX.
+function classifyIdentifier(raw: string): Channel {
+  const v = raw.trim();
+  if (v.includes("@")) {
+    return EMAIL_RE.test(v) ? { channel: "email", email: v } : { channel: "invalid" };
+  }
+  const digits = v.replace(/[\s-]/g, "").replace(/^\+?91/, "").replace(/\D/g, "");
+  if (digits.length === 10) {
+    return {
+      channel: "phone",
+      phone: `+91${digits}`,
+      display: `+91 ${digits.slice(0, 5)} ${digits.slice(5)}`,
+    };
+  }
+  return { channel: "invalid" };
+}
+
 export function LoginFlow() {
   const router = useRouter();
   const params = useSearchParams();
@@ -30,8 +53,11 @@ export function LoginFlow() {
   const supabase = createClient();
 
   const [phase, setPhase] = useState<Phase>("identifier");
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [otp, setOtp] = useState("");
+
+  const id = classifyIdentifier(identifier);
+  const idDisplay = id.channel === "email" ? id.email : id.channel === "phone" ? id.display : identifier.trim();
   const [resendIn, setResendIn] = useState(0);
   const [busy, setBusy] = useState(false);
 
@@ -47,15 +73,16 @@ export function LoginFlow() {
   }, [resendIn]);
 
   const sendCode = async () => {
-    if (!EMAIL_RE.test(email.trim())) {
-      toast.error("Enter a valid email address");
+    if (id.channel === "invalid") {
+      toast.error("Enter a valid email or 10-digit mobile number");
       return;
     }
     setBusy(true);
-    const { error } = await supabase.auth.signInWithOtp({
-      email: email.trim(),
-      options: { shouldCreateUser: true },
-    });
+    const { error } = await supabase.auth.signInWithOtp(
+      id.channel === "email"
+        ? { email: id.email, options: { shouldCreateUser: true } }
+        : { phone: id.phone, options: { shouldCreateUser: true } },
+    );
     setBusy(false);
     if (error) {
       toast.error(error.message);
@@ -71,12 +98,13 @@ export function LoginFlow() {
       toast.error("Enter the 6-digit code");
       return;
     }
+    if (id.channel === "invalid") return;
     setBusy(true);
-    const { data, error } = await supabase.auth.verifyOtp({
-      email: email.trim(),
-      token,
-      type: "email",
-    });
+    const { data, error } = await supabase.auth.verifyOtp(
+      id.channel === "email"
+        ? { email: id.email, token, type: "email" }
+        : { phone: id.phone, token, type: "sms" },
+    );
     if (error || !data.user) {
       setBusy(false);
       toast.error(error?.message ?? "That code didn't work");
@@ -89,18 +117,23 @@ export function LoginFlow() {
       return;
     }
 
+    if (next.startsWith("/")) {
+      router.replace(next);
+      router.refresh();
+      return;
+    }
     const { data: profile } = await supabase
       .from("profiles")
       .select("role")
       .eq("id", data.user.id)
-      .single();
-    const home =
+      .maybeSingle();
+    router.replace(
       profile?.role === "doctor"
         ? "/doctor/dashboard"
         : profile?.role === "admin"
           ? "/admin"
-          : "/dashboard";
-    router.replace(next.startsWith("/") ? next : home);
+          : "/dashboard",
+    );
     router.refresh();
   };
 
@@ -143,22 +176,23 @@ export function LoginFlow() {
             {practice ? "Apply to practise" : "Log in or sign up"}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            We&apos;ll email you a one-time code. No password to remember.
+            We&apos;ll send a one-time code by email or SMS. No password to
+            remember.
           </p>
           <div className="mt-6 flex flex-col gap-1.5">
-            <Label htmlFor="id">Email address</Label>
+            <Label htmlFor="id">Email or mobile number</Label>
             <Input
               id="id"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              autoComplete="email"
+              type="text"
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
+              placeholder="you@example.com or 98765 43210"
+              autoComplete="username"
             />
           </div>
           <Button
             className="mt-5 h-11 w-full bg-cta text-cta-foreground hover:bg-cta-hover"
-            disabled={busy || email.trim().length < 4}
+            disabled={busy || id.channel === "invalid"}
             onClick={sendCode}
           >
             {busy ? "Sending…" : "Send code"}
@@ -184,11 +218,11 @@ export function LoginFlow() {
             onClick={() => setPhase("identifier")}
           >
             <ArrowLeft className="size-4" />
-            Change email
+            Change
           </button>
           <h1 className="text-2xl">Enter the code</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Sent to <span className="text-foreground">{email}</span>
+            Sent to <span className="text-foreground">{idDisplay}</span>
           </p>
           <Input
             className="mt-6 text-center font-mono text-lg tracking-[0.4em]"

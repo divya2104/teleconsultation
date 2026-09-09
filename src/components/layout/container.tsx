@@ -16,7 +16,15 @@ export function Container({
   children: React.ReactNode;
 }) {
   return (
-    <div className={cn("mx-auto w-full px-4 md:px-6 lg:px-8", MAX[size], className)}>
+    <div
+      className={cn(
+        // Global horizontal gutter: 10px floor on the smallest screens,
+        // scaling up. This is the one place page padding is set.
+        "mx-auto w-full px-2.5 sm:px-4 md:px-6 lg:px-8",
+        MAX[size],
+        className,
+      )}
+    >
       {children}
     </div>
   );

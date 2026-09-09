@@ -16,6 +16,7 @@ import { marketingNav, forDoctorsMenu } from "@/lib/nav-config";
 import { cn } from "@/lib/utils";
 
 const LINKS = [
+  { label: "Home", href: "/" },
   { label: "How it works", href: "/how-it-works" },
   { label: "For doctors", href: "/for-doctors", dropdown: true },
   { label: "Pricing", href: "/pricing" },
