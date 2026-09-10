@@ -5,10 +5,12 @@ import { cn } from "@/lib/utils";
 export function Logo({
   href = "/",
   size = "md",
+  tone = "default",
   className,
 }: {
   href?: string;
   size?: "sm" | "md";
+  tone?: "default" | "light";
   className?: string;
 }) {
   const box = size === "sm" ? "size-7" : "size-8";
@@ -30,7 +32,8 @@ export function Logo({
       </span>
       <span
         className={cn(
-          "font-heading font-bold tracking-[-0.02em] text-heading",
+          "font-heading font-bold tracking-[-0.02em]",
+          tone === "light" ? "text-white" : "text-heading",
           text,
         )}
       >

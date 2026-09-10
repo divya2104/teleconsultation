@@ -7,6 +7,7 @@ import { ArrowRight, ImageIcon } from "lucide-react";
 import { Container } from "@/components/layout/container";
 import { Section } from "@/components/layout/section";
 import { Button } from "@/components/ui/button";
+import { TestimonialsSection } from "@/components/marketing/testimonials-section";
 import { sectionReveal } from "@/lib/motion";
 
 export function HomeContent() {
@@ -69,7 +70,7 @@ export function HomeContent() {
       </section>
 
       {/* how it works */}
-      <Section className="border-y border-border bg-surface-muted">
+      <Section className="border-y border-border bg-[#eef8f5]">
         <Container>
           <motion.div
             variants={sectionReveal}
@@ -105,6 +106,8 @@ export function HomeContent() {
         </Container>
       </Section>
 
+      {/* testimonials (ported from Figma) */}
+      <TestimonialsSection />
     </>
   );
 }

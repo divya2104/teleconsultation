@@ -212,18 +212,18 @@ export function BookingFlow() {
 
           <Label
             className={cn(
-              "mt-6 flex cursor-pointer items-start gap-3 rounded-[var(--radius-lg)] border p-4 text-[15px] font-normal leading-relaxed transition-colors",
+              "mt-6 flex cursor-pointer items-start gap-3.5 rounded-[var(--radius-lg)] border-2 p-4 text-[15px] font-normal leading-relaxed transition-colors",
               "focus-within:border-ring",
               consent
                 ? "border-primary bg-primary-subtle"
-                : "border-border bg-surface-muted",
+                : "border-muted-foreground/30 bg-surface",
             )}
             style={{ boxShadow: "var(--shadow-sm)" }}
           >
             <Checkbox
               checked={consent}
               onCheckedChange={(v) => setConsent(Boolean(v))}
-              className="mt-0.5"
+              className="mt-0.5 size-5 border-2 border-primary bg-surface data-checked:bg-primary [&_svg]:size-4"
             />
             I consent to this teleconsultation and understand it does not replace
             an in-person examination where one is needed.

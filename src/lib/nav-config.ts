@@ -60,3 +60,10 @@ export const navByRole: Record<Role, NavItem[]> = {
   doctor: doctorNav,
   admin: adminNav,
 };
+
+/** Landing route for a signed-in user of each role. */
+export const roleHome: Record<Role, string> = {
+  patient: "/dashboard",
+  doctor: "/doctor/dashboard",
+  admin: "/admin",
+};

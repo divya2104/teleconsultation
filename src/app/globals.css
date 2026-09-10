@@ -330,3 +330,44 @@
 .hiw-scope .anim-delay-4 {
   animation-delay: 0.32s;
 }
+
+/* ── testimonials section (ported from Figma) ── */
+@keyframes ts-fade-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fade-rise {
+  animation: ts-fade-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes ts-marquee-left {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+@keyframes ts-marquee-right {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-rise {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  [style*="ts-marquee"] {
+    animation: none !important;
+  }
+}

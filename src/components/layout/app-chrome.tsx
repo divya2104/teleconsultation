@@ -22,6 +22,7 @@ export function AppChrome({
       items={navByRole[role]}
       who={who}
       containerSize={wide ? "wide" : "content"}
+      sidebar={role !== "patient"}
     >
       {children}
     </AppShell>
