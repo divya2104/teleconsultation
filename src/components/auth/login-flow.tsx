@@ -22,6 +22,10 @@ type Phase = "identifier" | "otp" | "apply" | "applied";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+// Phone OTP needs a live SMS provider (Twilio/MSG91 + Indian DLT registration).
+// Off by default; local dev sets NEXT_PUBLIC_PHONE_OTP_ENABLED=true in .env.local.
+const PHONE_OTP_ENABLED = process.env.NEXT_PUBLIC_PHONE_OTP_ENABLED === "true";
+
 type Channel =
   | { channel: "email"; email: string }
   | { channel: "phone"; phone: string; display: string }
@@ -58,6 +62,7 @@ export function LoginFlow() {
 
   const id = classifyIdentifier(identifier);
   const idDisplay = id.channel === "email" ? id.email : id.channel === "phone" ? id.display : identifier.trim();
+  const phoneBlocked = id.channel === "phone" && !PHONE_OTP_ENABLED;
   const [resendIn, setResendIn] = useState(0);
   const [busy, setBusy] = useState(false);
 
@@ -73,6 +78,12 @@ export function LoginFlow() {
   }, [resendIn]);
 
   const sendCode = async () => {
+    if (phoneBlocked) {
+      toast.error(
+        "Phone sign-in isn't available yet — use your email address for now.",
+      );
+      return;
+    }
     if (id.channel === "invalid") {
       toast.error("Enter a valid email or 10-digit mobile number");
       return;
@@ -176,23 +187,35 @@ export function LoginFlow() {
             {practice ? "Apply to practise" : "Log in or sign up"}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            We&apos;ll send a one-time code by email or SMS. No password to
-            remember.
+            {PHONE_OTP_ENABLED
+              ? "We'll send a one-time code by email or SMS. No password to remember."
+              : "We'll email you a one-time code. No password to remember."}
           </p>
           <div className="mt-6 flex flex-col gap-1.5">
-            <Label htmlFor="id">Email or mobile number</Label>
+            <Label htmlFor="id">
+              {PHONE_OTP_ENABLED ? "Email or mobile number" : "Email address"}
+            </Label>
             <Input
               id="id"
               type="text"
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
-              placeholder="you@example.com or 98765 43210"
+              placeholder={
+                PHONE_OTP_ENABLED
+                  ? "you@example.com or 98765 43210"
+                  : "you@example.com"
+              }
               autoComplete="username"
             />
+            {phoneBlocked ? (
+              <p className="text-xs text-muted-foreground-strong">
+                Phone sign-in isn&apos;t available yet — use your email address.
+              </p>
+            ) : null}
           </div>
           <Button
             className="mt-5 h-11 w-full bg-cta text-cta-foreground hover:bg-cta-hover"
-            disabled={busy || id.channel === "invalid"}
+            disabled={busy || id.channel === "invalid" || phoneBlocked}
             onClick={sendCode}
           >
             {busy ? "Sending…" : "Send code"}

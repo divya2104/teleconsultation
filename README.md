@@ -55,11 +55,8 @@ Any other email or phone signs up as a **patient**.
 
 ## Deploy
 
-- **Supabase**: create a cloud project, then
-  `npx supabase link --project-ref <ref>` and `npx supabase db push` to apply
-  migrations. Set the same three env vars in the host.
-- **App**: any Node host for Next.js (Vercel is the natural fit). Set the env
-  vars; no build-time secrets.
+Vercel (app) + Supabase Cloud (DB/Auth/Storage) + Resend (email OTP). Full
+step-by-step in [`DEPLOY.md`](./DEPLOY.md).
 
 ## What's backed by the database vs. still mock
 
