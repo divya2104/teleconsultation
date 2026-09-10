@@ -32,6 +32,17 @@ Seed demo data: Supabase **SQL Editor** → paste all of `supabase/seed.sql` →
 (6 doctors + availability + `doctor@clearsight.test` / `admin@clearsight.test`.)
 Verify: `select count(*) from doctors;` → 6.
 
+The seeded `doctor@`/`admin@` addresses are `.test` — fine for local Mailpit,
+undeliverable in a hosted setup. Repoint them to inboxes you can receive; Gmail
+plus-addressing lets one inbox cover all three roles:
+
+```sql
+update auth.users set email='you+doctor@gmail.com', updated_at=now() where email='doctor@clearsight.test';
+update auth.users set email='you+admin@gmail.com',  updated_at=now() where email='admin@clearsight.test';
+update profiles   set email='you+doctor@gmail.com' where role='doctor';
+update profiles   set email='you+admin@gmail.com'  where role='admin';
+```
+
 Auth config (Dashboard → **Authentication**):
 
 - **Providers → Email**: enabled; **Confirm email: OFF**. Phone provider: OFF.
