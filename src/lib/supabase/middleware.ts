@@ -49,7 +49,9 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const path = request.nextUrl.pathname;
+  // Normalise the trailing slash (next.config has trailingSlash: true) so exact
+  // path checks like `=== "/login"` don't silently miss.
+  const path = request.nextUrl.pathname.replace(/(.)\/$/, "$1");
   const needsAuth = APP_PREFIXES.some((p) => matches(path, p));
 
   if (!user && needsAuth) {
@@ -79,8 +81,11 @@ export async function updateSession(request: NextRequest) {
           : "/dashboard";
 
     if (path === "/login") {
+      // A signed-in user who lands on /login goes to where they were headed
+      // (?next=), otherwise the home page — not straight to the dashboard.
+      const nx = request.nextUrl.searchParams.get("next");
       const url = request.nextUrl.clone();
-      url.pathname = home;
+      url.pathname = nx && nx.startsWith("/") ? nx : "/";
       url.search = "";
       return NextResponse.redirect(url);
     }

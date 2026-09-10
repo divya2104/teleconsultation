@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { ArrowLeft, Check } from "lucide-react";
 import { Logo } from "@/components/common/logo";
@@ -50,7 +50,6 @@ function classifyIdentifier(raw: string): Channel {
 }
 
 export function LoginFlow() {
-  const router = useRouter();
   const params = useSearchParams();
   const practice = params.get("intent") === "practice";
   const next = params.get("next") || "";
@@ -116,7 +115,7 @@ export function LoginFlow() {
         ? { email: id.email, token, type: "email" }
         : { phone: id.phone, token, type: "sms" },
     );
-    if (error || !data.user) {
+    if (error || !data.session) {
       setBusy(false);
       toast.error(error?.message ?? "That code didn't work");
       return;
@@ -128,24 +127,11 @@ export function LoginFlow() {
       return;
     }
 
-    if (next.startsWith("/")) {
-      router.replace(next);
-      router.refresh();
-      return;
-    }
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", data.user.id)
-      .maybeSingle();
-    router.replace(
-      profile?.role === "doctor"
-        ? "/doctor/dashboard"
-        : profile?.role === "admin"
-          ? "/admin"
-          : "/dashboard",
-    );
-    router.refresh();
+    // Session cookie is set. Land on the route that triggered login, otherwise
+    // the home page — never force the dashboard. A full navigation (not
+    // router.replace) guarantees the server sees the new auth cookie, which
+    // avoids the "stuck on Verifying…" state a soft nav can leave behind.
+    window.location.assign(next.startsWith("/") ? next : "/");
   };
 
   const submitApplication = async () => {
