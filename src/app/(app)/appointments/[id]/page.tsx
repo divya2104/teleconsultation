@@ -87,10 +87,19 @@ export default async function Page({
         </p>
         <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
           <DataField
-            label="Vision — right"
-            value={rec?.acuity.right ?? "—"}
+            label="Distance vision — right"
+            value={rec?.acuity.distanceRight ?? "—"}
           />
-          <DataField label="Vision — left" value={rec?.acuity.left ?? "—"} />
+          <DataField
+            label="Distance vision — left"
+            value={rec?.acuity.distanceLeft ?? "—"}
+          />
+          {rec?.acuity.nearRight ? (
+            <>
+              <DataField label="Reading — right" value={rec.acuity.nearRight} />
+              <DataField label="Reading — left" value={rec.acuity.nearLeft ?? "—"} />
+            </>
+          ) : null}
           <DataField
             label="Self-test"
             value={appt.intakeComplete ? "Complete" : "Pending"}

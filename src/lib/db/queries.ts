@@ -14,6 +14,7 @@ import {
   type Range,
 } from "@/lib/mock/doctor";
 import { QUESTIONS } from "@/lib/mock/intake";
+import { legacyOrV2 } from "@/lib/acuity";
 import type { Json } from "@/lib/database.types";
 
 /* ---------- mappers ---------- */
@@ -248,7 +249,6 @@ export async function getTriageForConsult(
 
   const p = one(appt.profiles);
   const tr = one(appt.triage_records);
-  const acuity = (tr?.acuity ?? {}) as { right?: string; left?: string };
   const paths = tr?.photo_paths ?? [];
 
   let photoUrls: string[] = [];
@@ -270,7 +270,7 @@ export async function getTriageForConsult(
       reason: appt.reason ?? appt.symptom ?? "—",
       urgency: (tr?.urgency ?? 1) as 0 | 1 | 2 | 3,
       redFlags: tr?.red_flags ?? [],
-      acuity: { right: acuity.right ?? "—", left: acuity.left ?? "—" },
+      acuity: legacyOrV2(tr?.acuity),
       questionnaire: answersToQnA(tr?.answers ?? {}),
       photoNotes: paths.length
         ? [`${paths.length} screening photo(s) attached`]

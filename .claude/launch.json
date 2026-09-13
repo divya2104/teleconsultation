@@ -4,14 +4,35 @@
     {
       "name": "clearsight",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
+      "runtimeArgs": [
+        "run",
+        "dev"
+      ],
       "port": 3000
     },
     {
       "name": "clearsight-prod",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "start:built"],
+      "runtimeArgs": [
+        "run",
+        "start:built"
+      ],
       "port": 3000
+    },
+    {
+      "name": "clearsight-https",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "next",
+        "dev",
+        "--experimental-https",
+        "--experimental-https-key",
+        "certificates/dev-key.pem",
+        "--experimental-https-cert",
+        "certificates/dev-cert.pem"
+      ],
+      "port": 3000,
+      "url": "https://localhost:3000"
     }
   ]
 }

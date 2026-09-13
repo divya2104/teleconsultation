@@ -1,6 +1,6 @@
 export const INTAKE_STEPS = ["questionnaire", "acuity", "photos", "review"] as const;
 export type IntakeStep = (typeof INTAKE_STEPS)[number];
-export const STEP_LABELS = ["Questionnaire", "Vision check", "Photos", "Review"];
+export const STEP_LABELS = ["Questionnaire", "Eye test", "Photos", "Review"];
 
 export type Question = {
   id: string;
@@ -85,17 +85,3 @@ export function scoreUrgency(answers: Answers): {
   const level = redFlags.length ? 3 : score >= 3 ? 2 : score >= 1 ? 1 : 0;
   return { level: level as 0 | 1 | 2 | 3, redFlags };
 }
-
-// ---- acuity ----
-// ponytail: fixed optotype rows + a self-reported distance calibration.
-// A real calibrated chart needs screen-DPI + measured distance; upgrade path
-// is a credit-card-on-screen size reference feeding true logMAR sizing.
-export const ACUITY_ROWS = [
-  { snellen: "6/60", letters: "E" },
-  { snellen: "6/36", letters: "F P" },
-  { snellen: "6/24", letters: "T O Z" },
-  { snellen: "6/18", letters: "L P E D" },
-  { snellen: "6/12", letters: "P E C F D" },
-  { snellen: "6/9", letters: "E D F C Z P" },
-  { snellen: "6/6", letters: "F E L O P Z D" },
-];

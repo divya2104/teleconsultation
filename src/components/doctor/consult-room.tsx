@@ -206,9 +206,18 @@ export function ConsultRoom({
           ) : null}
 
           <div className="mt-4 grid grid-cols-2 gap-2">
-            <DataField label="Acuity OD" value={triage.acuity.right} />
-            <DataField label="Acuity OS" value={triage.acuity.left} />
+            <DataField label="Distance VA OD" value={triage.acuity.distanceRight} />
+            <DataField label="Distance VA OS" value={triage.acuity.distanceLeft} />
+            {triage.acuity.nearRight ? (
+              <>
+                <DataField label="Near VA OD · 40 cm" value={triage.acuity.nearRight} />
+                <DataField label="Near VA OS · 40 cm" value={triage.acuity.nearLeft ?? "—"} />
+              </>
+            ) : null}
           </div>
+          <p className="mt-2 text-xs text-muted-foreground">
+            {triage.acuity.note ?? "Self-reported vision check (legacy)"} · * screen-limited · screening aid
+          </p>
 
           <h3 className="mt-5 text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
             Questionnaire

@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/client";
 import type { Json } from "@/lib/database.types";
 import { DAYS, type DayKey, type Range } from "@/lib/mock/doctor";
+import type { AcuitySubmission } from "@/lib/acuity";
 
 /** Doctor shape the booking picker consumes (open slots attached). */
 export type BookableDoctor = {
@@ -119,15 +120,19 @@ export async function bookAppointment(input: {
   return { ok: true, id: data.id, ref: data.ref };
 }
 
-/** Uploads intake photos (data URLs or File) to storage; returns the object paths. */
+/**
+ * Uploads intake photos (JPEG data URLs or Files) to storage; returns the object
+ * paths. Index = shot (0 straight-on · 1 right eye · 2 left eye); empty slots skipped.
+ */
 export async function uploadIntakePhotos(
   appointmentId: string,
-  photos: (string | File)[],
+  photos: (string | File | undefined)[],
 ): Promise<string[]> {
   const supabase = createClient();
   const paths: string[] = [];
   for (let i = 0; i < photos.length; i++) {
     const p = photos[i];
+    if (!p) continue;
     const blob =
       typeof p === "string" ? await (await fetch(p)).blob() : p;
     const path = `${appointmentId}/${i}.jpg`;
@@ -142,7 +147,7 @@ export async function uploadIntakePhotos(
 export async function submitTriage(input: {
   appointmentId: string;
   answers: Record<string, string | string[]>;
-  acuity: { right: string; left: string; distanceOk?: boolean };
+  acuity: AcuitySubmission;
   photoPaths: string[];
 }): Promise<{ ok: boolean; error?: string }> {
   const supabase = createClient();

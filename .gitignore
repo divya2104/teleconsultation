@@ -11,3 +11,6 @@ build/
 # Supabase CLI local state
 supabase/.branches/
 supabase/.temp/
+
+# local dev TLS certs (next dev --experimental-https)
+certificates/

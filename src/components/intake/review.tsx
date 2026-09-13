@@ -8,7 +8,14 @@ import { NavButtons } from "@/components/intake/nav-buttons";
 import { TriageBadge } from "@/components/common/triage-badge";
 import { Panel, StatTile } from "@/components/intake/question-fields";
 import { QUESTIONS, scoreUrgency } from "@/lib/mock/intake";
-import { readDraft, clearDraft, type IntakeDraft } from "@/lib/intake-store";
+import {
+  readDraft,
+  clearDraft,
+  readCalibration,
+  buildAcuitySubmission,
+  type IntakeDraft,
+} from "@/lib/intake-store";
+import { summary } from "@/lib/acuity";
 import { uploadIntakePhotos, submitTriage } from "@/lib/db/client-api";
 
 const LEVEL_TO_STATE = ["normal", "review", "review", "urgent"] as const;
@@ -73,17 +80,13 @@ export function Review() {
     setSubmitting(true);
     void (async () => {
       const d = readDraft();
-      const paths = d.photos?.length
+      const paths = d.photos?.some(Boolean)
         ? await uploadIntakePhotos(appt, d.photos)
         : [];
       const res = await submitTriage({
         appointmentId: appt,
         answers: d.answers,
-        acuity: {
-          right: d.acuity?.right ?? "",
-          left: d.acuity?.left ?? "",
-          distanceOk: d.acuity?.distanceOk,
-        },
+        acuity: buildAcuitySubmission(d.acuity, readCalibration()),
         photoPaths: paths,
       });
       if (!res.ok) {
@@ -138,11 +141,17 @@ export function Review() {
             </dl>
           </Section>
 
-          <Section title="Vision check">
-            <div className="grid grid-cols-2 gap-3">
-              <StatTile label="Right eye" value={draft.acuity?.right || "—"} />
-              <StatTile label="Left eye" value={draft.acuity?.left || "—"} />
-            </div>
+          <Section title="Eye test">
+            {draft.acuity?.skipped ? (
+              <p className="text-sm text-muted-foreground">Skipped — the doctor will check your vision in the consult.</p>
+            ) : (
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <StatTile label={`Distance R · ${draft.acuity?.meters ?? 3} m`} value={summary(draft.acuity?.distance?.right)} />
+                <StatTile label={`Distance L · ${draft.acuity?.meters ?? 3} m`} value={summary(draft.acuity?.distance?.left)} />
+                <StatTile label="Near R · 40 cm" value={summary(draft.acuity?.near?.right)} />
+                <StatTile label="Near L · 40 cm" value={summary(draft.acuity?.near?.left)} />
+              </div>
+            )}
           </Section>
 
           <Section title="Photos">

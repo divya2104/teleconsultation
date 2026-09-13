@@ -128,7 +128,14 @@ export type TriageRecord = {
   reason: string;
   urgency: 0 | 1 | 2 | 3;
   redFlags: string[];
-  acuity: { right: string; left: string };
+  /** Display strings from lib/acuity legacyOrV2(). */
+  acuity: {
+    distanceRight: string;
+    distanceLeft: string;
+    nearRight?: string;
+    nearLeft?: string;
+    note?: string;
+  };
   questionnaire: { q: string; a: string }[];
   photoNotes: string[];
   pastAppointments: { date: string; diagnosis: string }[];
@@ -142,7 +149,13 @@ export const triageRecords: Record<string, TriageRecord> = {
     reason: "Blurred vision, 4 days",
     urgency: 2,
     redFlags: [],
-    acuity: { right: "6/12", left: "6/9" },
+    acuity: {
+      distanceRight: "6/12",
+      distanceLeft: "6/9",
+      nearRight: "6/9*",
+      nearLeft: "6/7.6",
+      note: "3 m · helper-held · with glasses · camera-checked 296 cm",
+    },
     questionnaire: [
       { q: "When did it start?", a: "In the last few days" },
       { q: "Symptoms", a: "Blurred vision, redness" },
@@ -169,7 +182,7 @@ export function getTriage(id: string): TriageRecord {
       reason: queue.find((q) => q.id === id)?.summary ?? "—",
       urgency: queue.find((q) => q.id === id)?.urgency ?? 1,
       redFlags: [],
-      acuity: { right: "6/9", left: "6/9" },
+      acuity: { distanceRight: "6/9", distanceLeft: "6/9" },
       questionnaire: [{ q: "Symptoms", a: queue.find((q) => q.id === id)?.summary ?? "—" }],
       photoNotes: ["Screening images attached"],
       pastAppointments: [],
