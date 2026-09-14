@@ -40,28 +40,24 @@ export function FreeEyeTestSection() {
   const bestBand = band(best);
 
   return (
-    <Section className="py-8 md:py-10 lg:py-12">
-      <Container>
-        {/* the section itself is a lifted panel; the illustration sits inside its frame */}
-        <div
-          className="relative overflow-hidden rounded-[var(--radius-2xl)] border border-border-brand border-b-[5px] border-b-[#b7e4dd] bg-surface px-5 py-6 sm:px-8 sm:py-8 lg:px-10 lg:py-8"
-          style={{ boxShadow: "inset 0 1px 0 rgba(255,255,255,0.95), 0 2px 4px rgba(15,23,42,0.06), 0 24px 48px -16px rgba(15,23,42,0.18), 0 40px 80px -40px rgba(14,124,134,0.45)" }}
-        >
-          {/* translucent illustration behind the panel */}
-          <div aria-hidden className="pointer-events-none absolute inset-0">
-            <Image
-              src="/media/eye-test-bg.webp"
-              alt=""
-              fill
-              sizes="1152px"
-              className="object-cover object-center opacity-[0.38]"
-              // Flattening the art's near-black pixels lets it sit at a higher
-              // opacity and still keep text over it above 4.5:1.
-              style={{ filter: "contrast(0.55) brightness(1.12)" }}
-            />
-            {/* white wash — never below 28 % so text over the art stays legible */}
-            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.55)_0%,rgba(255,255,255,0.28)_45%,rgba(255,255,255,0.42)_100%)]" />
-          </div>
+    // Padding carries what the old inner panel contributed, so the section keeps its height.
+    <Section className="relative overflow-hidden py-14 md:py-[4.5rem] lg:py-20">
+      {/* translucent illustration — full bleed behind the whole section */}
+      <div aria-hidden className="pointer-events-none absolute inset-0">
+        <Image
+          src="/media/eye-test-bg.webp"
+          alt=""
+          fill
+          sizes="100vw"
+          className="object-cover object-center opacity-[0.38]"
+          // Flattening the art's near-black pixels lets it sit at a higher
+          // opacity and still keep text over it above 4.5:1.
+          style={{ filter: "contrast(0.55) brightness(1.12)" }}
+        />
+        {/* white wash — never below 28 % so text over the art stays legible */}
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.55)_0%,rgba(255,255,255,0.28)_45%,rgba(255,255,255,0.42)_100%)]" />
+      </div>
+      <Container className="relative">
         <motion.div
           variants={sectionReveal}
           initial="hidden"
@@ -235,7 +231,6 @@ export function FreeEyeTestSection() {
             </div>
           </div>
         </motion.div>
-        </div>
       </Container>
     </Section>
   );
