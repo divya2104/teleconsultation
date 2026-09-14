@@ -19,6 +19,8 @@ import {
   type BookableDoctor,
 } from "@/lib/db/client-api";
 import { cn } from "@/lib/utils";
+import { hasFreeTest, readDraft } from "@/lib/intake-store";
+import { QUESTIONS } from "@/lib/mock/intake";
 
 const STEPS = ["Reason", "Doctor & slot", "Review"];
 type Phase = "reason" | "doctor" | "review";
@@ -31,7 +33,19 @@ const SYMPTOMS = [
   "Itching",
   "Routine check / glasses",
   "Follow-up",
+  "Other",
 ];
+
+/** Reason text derived from a completed free eye test's questionnaire. */
+function reasonFromDraft(): { symptom: string; note: string } | null {
+  const d = readDraft();
+  if (!hasFreeTest(d)) return null;
+  const q = QUESTIONS.find((x) => x.id === "symptoms");
+  const picked = Array.isArray(d.answers.symptoms) ? (d.answers.symptoms as string[]) : [];
+  const labels = picked.map((v) => q?.options?.find((o) => o.value === v)?.label ?? v);
+  const note = typeof d.answers.notes === "string" ? d.answers.notes : "";
+  return { symptom: labels.length ? labels.join(", ") : "Free eye test", note };
+}
 
 const BKEY = "clearsight.booking";
 function readBooking(): Record<string, unknown> {
@@ -53,7 +67,9 @@ export function BookingFlow() {
   const router = useRouter();
   const [phase, setPhase] = useState<Phase>("reason");
   const [symptom, setSymptom] = useState("");
+  const [other, setOther] = useState("");
   const [note, setNote] = useState("");
+  const [fromTest, setFromTest] = useState(false);
   const [doctorId, setDoctorId] = useState("");
   const [slot, setSlot] = useState("");
   const [consent, setConsent] = useState(false);
@@ -63,9 +79,21 @@ export function BookingFlow() {
   useEffect(() => {
     const b = readBooking();
     if (typeof b.symptom === "string") setSymptom(b.symptom);
+    if (typeof b.other === "string") setOther(b.other);
     if (typeof b.note === "string") setNote(b.note);
+    // Arriving from the free eye test: the questionnaire already covers "why",
+    // so go straight to choosing a doctor.
+    const fromDraft = reasonFromDraft();
+    if (fromDraft) {
+      setSymptom(fromDraft.symptom);
+      setNote(fromDraft.note);
+      setFromTest(true);
+      setPhase("doctor");
+    }
     listDoctorsWithSlots().then(setDoctors);
   }, []);
+
+  const reasonText = symptom === "Other" ? other.trim() : symptom;
 
   const doctor = useMemo(
     () => doctors.find((d) => d.id === doctorId),
@@ -80,8 +108,8 @@ export function BookingFlow() {
     const res = await bookAppointment({
       doctorId: doctor.id,
       startsAt: slot,
-      reason: symptom,
-      symptom,
+      reason: reasonText,
+      symptom: reasonText,
       note: note || undefined,
     });
     setBooking(false);
@@ -150,6 +178,22 @@ export function BookingFlow() {
             ))}
           </div>
 
+          {symptom === "Other" ? (
+            <div className="mt-4 flex flex-col gap-1.5">
+              <Label htmlFor="other">Describe your issue</Label>
+              <Input
+                id="other"
+                autoFocus
+                value={other}
+                onChange={(e) => {
+                  setOther(e.target.value);
+                  writeBooking({ other: e.target.value });
+                }}
+                placeholder="e.g. a dark spot in the middle of my vision"
+              />
+            </div>
+          ) : null}
+
           <div className="mt-5 flex flex-col gap-1.5">
             <Label htmlFor="note">Anything else? (optional)</Label>
             <Input
@@ -178,7 +222,7 @@ export function BookingFlow() {
           onBack={() => router.push("/dashboard")}
           backLabel="Cancel"
           onNext={() => setPhase("doctor")}
-          nextDisabled={!symptom}
+          nextDisabled={!reasonText}
         />
         </>
       )}
@@ -192,12 +236,16 @@ export function BookingFlow() {
             style={{ boxShadow: "var(--shadow-sm)" }}
           >
             <Row label="Reason">
-              {symptom}
+              {reasonText}
               {note ? <span className="text-muted-foreground"> — {note}</span> : null}
+              {fromTest ? <span className="block text-xs text-muted-foreground">From your free eye test — attached after payment</span> : null}
             </Row>
             <Row label="Doctor">
               {doctor?.name}{" "}
-              <span className="text-muted-foreground">· {doctor?.specialty}</span>
+              <span className="text-muted-foreground">
+                · {doctor?.specialty}
+                {doctor?.yearsExperience ? ` · ${doctor.yearsExperience} yrs experience` : ""}
+              </span>
             </Row>
             <Row label="Time">
               <span className="font-mono tabular-nums">

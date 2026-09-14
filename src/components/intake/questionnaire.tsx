@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -18,11 +18,15 @@ const HALF_WIDTH = new Set(["which_eye", "contacts"]);
 
 export function Questionnaire() {
   const router = useRouter();
+  const free = usePathname().startsWith("/eye-test");
   const [answers, setAnswers] = useState<Answers>({});
 
   useEffect(() => {
-    setAnswers(readDraft().answers ?? {});
-  }, []);
+    const d = readDraft();
+    setAnswers(d.answers ?? {});
+    // A draft started on the free test keeps that origin until it is attached to a booking.
+    if (free && d.source !== "eye-test") writeDraft({ source: "eye-test" });
+  }, [free]);
 
   const requestRefund = () => {
     clearDraft();
@@ -32,16 +36,21 @@ export function Questionnaire() {
     router.push("/dashboard");
   };
 
-  const set = (id: string, value: string | string[]) => {
-    const next = { ...answers, [id]: value };
-    setAnswers(next);
-    writeDraft({ answers: next });
-  };
+  // Functional updates: rapid taps must not overwrite each other.
+  const set = (id: string, value: string | string[]) =>
+    setAnswers((prev) => {
+      const next = { ...prev, [id]: value };
+      writeDraft({ answers: next });
+      return next;
+    });
 
-  const toggleMulti = (id: string, value: string) => {
-    const cur = Array.isArray(answers[id]) ? (answers[id] as string[]) : [];
-    set(id, cur.includes(value) ? cur.filter((v) => v !== value) : [...cur, value]);
-  };
+  const toggleMulti = (id: string, value: string) =>
+    setAnswers((prev) => {
+      const cur = Array.isArray(prev[id]) ? (prev[id] as string[]) : [];
+      const next = { ...prev, [id]: cur.includes(value) ? cur.filter((v) => v !== value) : [...cur, value] };
+      writeDraft({ answers: next });
+      return next;
+    });
 
   const { level, redFlags } = scoreUrgency(answers);
   const answered = QUESTIONS.filter((q) => q.type !== "text").every((q) => {
@@ -68,19 +77,25 @@ export function Questionnaire() {
               emergency — seek in-person emergency care now, don&apos;t wait for the
               consult.
             </EmergencyBanner>
-            <div className="flex flex-wrap items-center gap-3">
-              <Button
-                variant="outline"
-                size="sm"
-                className="border-triage-urgent text-triage-urgent-fg hover:bg-triage-urgent-bg"
-                onClick={requestRefund}
-              >
-                Request a refund &amp; cancel
-              </Button>
+            {free ? (
               <span className="text-xs text-muted-foreground">
-                or continue below — your doctor will see this flag.
+                You can still continue — if you book, your doctor will see this flag.
               </span>
-            </div>
+            ) : (
+              <div className="flex flex-wrap items-center gap-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-triage-urgent text-triage-urgent-fg hover:bg-triage-urgent-bg"
+                  onClick={requestRefund}
+                >
+                  Request a refund &amp; cancel
+                </Button>
+                <span className="text-xs text-muted-foreground">
+                  or continue below — your doctor will see this flag.
+                </span>
+              </div>
+            )}
           </div>
         ) : null}
 

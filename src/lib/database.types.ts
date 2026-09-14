@@ -136,6 +136,7 @@ export type Database = {
           reg_no: string | null
           specialty: string
           verification_status: Database["public"]["Enums"]["verification_status"]
+          years_experience: number | null
         }
         Insert: {
           active?: boolean
@@ -149,6 +150,7 @@ export type Database = {
           reg_no?: string | null
           specialty: string
           verification_status?: Database["public"]["Enums"]["verification_status"]
+          years_experience?: number | null
         }
         Update: {
           active?: boolean
@@ -162,6 +164,7 @@ export type Database = {
           reg_no?: string | null
           specialty?: string
           verification_status?: Database["public"]["Enums"]["verification_status"]
+          years_experience?: number | null
         }
         Relationships: [
           {

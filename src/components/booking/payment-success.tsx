@@ -4,12 +4,14 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
-import { ArrowRight, ClipboardCheck, Image as ImageIcon } from "lucide-react";
+import { ArrowRight, ClipboardCheck, Image as ImageIcon, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   getAppointmentBrief,
+  submitDraftTriage,
   type AppointmentBrief,
 } from "@/lib/db/client-api";
+import { clearDraft, hasFreeTest, readDraft } from "@/lib/intake-store";
 
 const fmtDay = (iso: string) =>
   new Date(iso).toLocaleDateString("en-IN", {
@@ -22,9 +24,19 @@ export function PaymentSuccess() {
   const params = useSearchParams();
   const appt = params.get("appt");
   const [b, setB] = useState<AppointmentBrief | null>(null);
+  // "idle" = no free test to attach → the usual "start the self-test" card.
+  const [attach, setAttach] = useState<"idle" | "working" | "done" | "failed">("idle");
 
   useEffect(() => {
-    if (appt) getAppointmentBrief(appt).then(setB);
+    if (!appt) return;
+    getAppointmentBrief(appt).then(setB);
+    const d = readDraft();
+    if (!hasFreeTest(d)) return;
+    setAttach("working");
+    submitDraftTriage(appt, d).then((res) => {
+      if (res.ok) clearDraft();
+      setAttach(res.ok ? "done" : "failed");
+    });
   }, [appt]);
 
   const selfTestHref = appt
@@ -71,17 +83,31 @@ export function PaymentSuccess() {
           {b?.startsAt
             ? `Your doctor sees you ${fmtDay(b.startsAt)}. `
             : "Your doctor will see you soon. "}
-          Take the 5-minute self-test now so they start with the full picture.
+          {attach === "working"
+            ? "Attaching your eye test results to this booking…"
+            : attach === "done"
+              ? "Your eye test results are attached — the doctor opens the consult with them ready."
+              : attach === "failed"
+                ? "We couldn't attach your eye test results. You can redo the 5-minute self-test now."
+                : "Take the 5-minute self-test now so they start with the full picture."}
         </p>
-        <Button
-          asChild
-          className="shrink-0 bg-cta text-cta-foreground hover:bg-cta-hover"
-        >
-          <Link href={selfTestHref}>
-            Start the self-test
-            <ArrowRight className="size-4" />
-          </Link>
-        </Button>
+        {attach === "working" ? (
+          <Loader2 className="size-5 shrink-0 animate-spin text-primary" />
+        ) : attach === "done" ? (
+          <Button asChild className="shrink-0 bg-cta text-cta-foreground hover:bg-cta-hover">
+            <Link href={`/booking-confirmed?appt=${appt}`}>
+              Done
+              <ArrowRight className="size-4" />
+            </Link>
+          </Button>
+        ) : (
+          <Button asChild className="shrink-0 bg-cta text-cta-foreground hover:bg-cta-hover">
+            <Link href={selfTestHref}>
+              Start the self-test
+              <ArrowRight className="size-4" />
+            </Link>
+          </Button>
+        )}
       </div>
 
       <Link

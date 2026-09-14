@@ -9,6 +9,7 @@ import { Panel, PillGroup, StatTile } from "@/components/intake/question-fields"
 import { AcuityCalibrate } from "@/components/intake/acuity-calibrate";
 import { AcuityChart } from "@/components/intake/acuity-chart";
 import { AcuityPad } from "@/components/intake/acuity-pad";
+import { ScoreGauge } from "@/components/intake/score-gauge";
 import {
   DistanceBadge,
   DistanceMeter,
@@ -16,6 +17,7 @@ import {
   type GuardState,
 } from "@/components/intake/acuity-distance-guard";
 import {
+  isSkipped,
   answer as reduce,
   currentLetterMm,
   currentLogMAR,
@@ -811,15 +813,16 @@ export function Acuity() {
         {!skippedAll ? (
           <>
             <p className="mt-6 text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">Distance · {draft.meters} m</p>
-            <div className="mt-2 grid grid-cols-2 gap-3">
-              <StatTile label="Right eye" value={summary(draft.distance?.right)} size="lg" />
-              <StatTile label="Left eye" value={summary(draft.distance?.left)} size="lg" />
+            <div className="mt-3 flex flex-col gap-6">
+              <ScoreGauge label="Right eye" mark="R" eye={draft.distance?.right} delayMs={300} />
+              <ScoreGauge label="Left eye" mark="L" eye={draft.distance?.left} delayMs={2100} />
             </div>
-            <p className="mt-5 text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">Reading · 40 cm</p>
+            <p className="mt-6 text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">Reading · 40 cm</p>
             <div className="mt-2 grid grid-cols-2 gap-3">
               <StatTile label="Right eye" value={summary(draft.near?.right)} />
               <StatTile label="Left eye" value={summary(draft.near?.left)} />
             </div>
+            <ResultNotes draft={draft} />
           </>
         ) : null}
         <Button
@@ -869,5 +872,45 @@ function QrImage({ url }: { url: string }) {
     <img src={src} alt="QR code to open the phone remote" className="size-44 shrink-0 rounded-[var(--radius-sm)] border border-border" />
   ) : (
     <div className="size-44 shrink-0 rounded-[var(--radius-sm)] border border-border bg-surface-muted" aria-hidden />
+  );
+}
+
+/** Earned checks + a one-line, non-diagnostic reading of the two eyes. */
+function ResultNotes({ draft }: { draft: AcuityDraft }) {
+  const r = draft.distance?.right;
+  const l = draft.distance?.left;
+  const both = !!r && !!l && !isSkipped(r) && !isSkipped(l);
+  const check = draft.distance?.check;
+  const diff = both ? Math.round(Math.abs(r.logMAR - l.logMAR) * 100) / 100 : 0; // avoid 0.19999 < 0.2
+  const weaker = both && diff >= 0.2 ? (r.logMAR > l.logMAR ? "right" : "left") : null;
+  const lines = Math.round(diff / 0.1);
+  return (
+    <div className="mt-6 flex flex-col gap-2 border-t border-border pt-4 text-sm">
+      {both ? (
+        <p className="flex items-center gap-2.5">
+          <Tick /> Both eyes tested at {draft.meters ?? 3} m
+          {draft.correction && draft.correction !== "none" ? `, with ${draft.correction}` : ", unaided"}
+        </p>
+      ) : null}
+      <p className="flex items-center gap-2.5">
+        <Tick /> Screen calibrated
+        {check && check.method !== "none" && check.meanCm ? ` · distance camera-checked at ${(check.meanCm / 100).toFixed(1)} m` : ""}
+      </p>
+      <p className="mt-1 text-sm text-muted-foreground">
+        {weaker
+          ? `Your ${weaker} eye reads ${lines} line${lines === 1 ? "" : "s"} below the other. That is worth showing a doctor — it is not a diagnosis.`
+          : both
+            ? "Both eyes read at a similar level. Your doctor confirms what this means for you."
+            : "Your doctor will check the eye that was skipped during the consult."}
+      </p>
+    </div>
+  );
+}
+
+function Tick() {
+  return (
+    <span className="grid size-[22px] shrink-0 place-items-center rounded-full bg-triage-normal-bg text-triage-normal-fg">
+      <Check className="size-3" strokeWidth={3} />
+    </span>
   );
 }

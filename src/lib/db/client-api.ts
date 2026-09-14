@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/client";
 import type { Json } from "@/lib/database.types";
 import { DAYS, type DayKey, type Range } from "@/lib/mock/doctor";
 import type { AcuitySubmission } from "@/lib/acuity";
+import { buildAcuitySubmission, readCalibration, type IntakeDraft } from "@/lib/intake-store";
 
 /** Doctor shape the booking picker consumes (open slots attached). */
 export type BookableDoctor = {
@@ -12,6 +13,7 @@ export type BookableDoctor = {
   specialty: string;
   languages: string[];
   photo?: string;
+  yearsExperience?: number;
   slots: string[]; // ISO datetimes, currently open
 };
 
@@ -21,7 +23,8 @@ export async function listDoctorsWithSlots(
   const supabase = createClient();
   const { data: docs, error } = await supabase
     .from("doctors")
-    .select("id, name, specialty, languages, photo_url")
+    // "*" so the list keeps working before the years_experience migration is applied.
+    .select("*")
     .eq("active", true)
     .eq("verification_status", "verified")
     .order("name");
@@ -39,6 +42,7 @@ export async function listDoctorsWithSlots(
         specialty: d.specialty,
         languages: d.languages ?? [],
         photo: d.photo_url ?? undefined,
+        yearsExperience: (d as { years_experience?: number | null }).years_experience ?? undefined,
         slots: (slots ?? []) as string[],
       };
     }),
@@ -166,6 +170,20 @@ export async function submitTriage(input: {
     };
   }
   return { ok: true };
+}
+
+/** Upload the draft's photos and submit its triage for an appointment (review step + free-test attach). */
+export async function submitDraftTriage(
+  appointmentId: string,
+  d: IntakeDraft,
+): Promise<{ ok: boolean; error?: string }> {
+  const paths = d.photos?.some(Boolean) ? await uploadIntakePhotos(appointmentId, d.photos) : [];
+  return submitTriage({
+    appointmentId,
+    answers: d.answers,
+    acuity: buildAcuitySubmission(d.acuity, readCalibration()),
+    photoPaths: paths,
+  });
 }
 
 export async function signOut(): Promise<void> {

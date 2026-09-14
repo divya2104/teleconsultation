@@ -3,11 +3,12 @@
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { ArrowRight, ImageIcon } from "lucide-react";
+import { ArrowRight, Eye, ImageIcon } from "lucide-react";
 import { Container } from "@/components/layout/container";
 import { Section } from "@/components/layout/section";
 import { Button } from "@/components/ui/button";
 import { TestimonialsSection } from "@/components/marketing/testimonials-section";
+import { FreeEyeTestSection } from "@/components/marketing/free-eye-test-section";
 import { sectionReveal } from "@/lib/motion";
 
 export function HomeContent() {
@@ -41,7 +42,10 @@ export function HomeContent() {
                 </Link>
               </Button>
               <Button asChild variant="outline" size="lg" className="h-11 px-6">
-                <Link href="/how-it-works">See how it works</Link>
+                <Link href="/eye-test/questionnaire">
+                  <Eye className="size-4" />
+                  Take the free eye test
+                </Link>
               </Button>
             </div>
             <p className="mt-4 font-mono text-xs text-muted-foreground">
@@ -68,6 +72,9 @@ export function HomeContent() {
           </div>
         </Container>
       </section>
+
+      {/* free eye test */}
+      <FreeEyeTestSection />
 
       {/* how it works */}
       <Section className="border-y border-border bg-[#eef8f5]">

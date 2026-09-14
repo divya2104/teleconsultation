@@ -1,22 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { Camera } from "lucide-react";
+import { ArrowRight, Camera } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { NavButtons } from "@/components/intake/nav-buttons";
 import { TriageBadge } from "@/components/common/triage-badge";
 import { Panel, StatTile } from "@/components/intake/question-fields";
 import { QUESTIONS, scoreUrgency } from "@/lib/mock/intake";
-import {
-  readDraft,
-  clearDraft,
-  readCalibration,
-  buildAcuitySubmission,
-  type IntakeDraft,
-} from "@/lib/intake-store";
+import { readDraft, clearDraft, type IntakeDraft } from "@/lib/intake-store";
 import { summary } from "@/lib/acuity";
-import { uploadIntakePhotos, submitTriage } from "@/lib/db/client-api";
+import { submitDraftTriage } from "@/lib/db/client-api";
 
 const LEVEL_TO_STATE = ["normal", "review", "review", "urgent"] as const;
 
@@ -59,6 +55,7 @@ function KeyValueRow({ q, a }: { q: string; a: string }) {
 export function Review() {
   const router = useRouter();
   const params = useSearchParams();
+  const free = usePathname().startsWith("/eye-test");
   const appt = params.get("appt");
   const [draft, setDraft] = useState<IntakeDraft | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -79,16 +76,7 @@ export function Review() {
     }
     setSubmitting(true);
     void (async () => {
-      const d = readDraft();
-      const paths = d.photos?.some(Boolean)
-        ? await uploadIntakePhotos(appt, d.photos)
-        : [];
-      const res = await submitTriage({
-        appointmentId: appt,
-        answers: d.answers,
-        acuity: buildAcuitySubmission(d.acuity, readCalibration()),
-        photoPaths: paths,
-      });
+      const res = await submitDraftTriage(appt, readDraft());
       if (!res.ok) {
         setSubmitting(false);
         toast.error(res.error ?? "Couldn't submit the self-test.");
@@ -104,9 +92,11 @@ export function Review() {
   return (
     <>
       <Panel>
-        <h1 className="text-2xl">Review your self-test</h1>
+        <h1 className="text-2xl">{free ? "Your triage summary" : "Review your self-test"}</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          This becomes the triage summary your doctor opens the consult with.
+          {free
+            ? "A screening summary, not a diagnosis. Book a consultation and your ophthalmologist opens the call with this ready — no need to repeat the test."
+            : "This becomes the triage summary your doctor opens the consult with."}
         </p>
 
         <div className="mt-8 flex flex-col">
@@ -180,12 +170,26 @@ export function Review() {
         </div>
       </Panel>
 
-      <NavButtons
-        step="review"
-        canContinue={!submitting}
-        continueLabel={submitting ? "Submitting…" : "Submit self-test"}
-        onContinue={submit}
-      />
+      {free ? (
+        <div className="mt-6 flex flex-wrap items-center gap-3">
+          <Button asChild size="lg" className="h-11 bg-cta px-6 text-cta-foreground hover:bg-cta-hover">
+            <Link href="/book">
+              Book a consultation with a doctor
+              <ArrowRight className="size-4" />
+            </Link>
+          </Button>
+          <Button asChild variant="ghost" className="text-muted-foreground">
+            <Link href="/">Not now</Link>
+          </Button>
+        </div>
+      ) : (
+        <NavButtons
+          step="review"
+          canContinue={!submitting}
+          continueLabel={submitting ? "Submitting…" : "Submit self-test"}
+          onContinue={submit}
+        />
+      )}
     </>
   );
 }

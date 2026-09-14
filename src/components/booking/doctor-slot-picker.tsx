@@ -162,6 +162,7 @@ export function DoctorSlotPicker({
                     </span>
                     <span className="block text-xs text-muted-foreground">
                       {d.specialty}
+                      {d.yearsExperience ? ` · ${d.yearsExperience} yrs experience` : ""}
                     </span>
                     <span className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
                       <Languages className="size-3 shrink-0" />
@@ -374,7 +375,10 @@ function DoctorBanner({ doctor }: { doctor: Doctor }) {
           <p className="truncate font-heading text-base font-semibold text-white">
             {doctor.name}
           </p>
-          <p className="truncate text-sm text-white/70">{doctor.specialty}</p>
+          <p className="truncate text-sm text-white/70">
+            {doctor.specialty}
+            {doctor.yearsExperience ? ` · ${doctor.yearsExperience} years of experience` : ""}
+          </p>
         </div>
       </div>
     </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StickyWizardFooter } from "@/components/common/sticky-wizard-footer";
@@ -19,6 +19,10 @@ export function NavButtons({
 }) {
   const router = useRouter();
   const params = useSearchParams();
+  const pathname = usePathname();
+  // Same steps serve the booked intake (/intake) and the free test (/eye-test).
+  const free = pathname.startsWith("/eye-test");
+  const base = free ? "/eye-test" : "/intake";
   const appt = params.get("appt");
   const qs = appt ? `?appt=${appt}` : "";
 
@@ -31,7 +35,7 @@ export function NavButtons({
       const ok = onContinue();
       if (ok === false) return;
     }
-    if (nextStep) router.push(`/intake/${nextStep}${qs}`);
+    if (nextStep) router.push(`${base}/${nextStep}${qs}`);
   };
 
   return (
@@ -39,7 +43,7 @@ export function NavButtons({
       <Button
         variant="ghost"
         onClick={() =>
-          prev ? router.push(`/intake/${prev}${qs}`) : router.push("/dashboard")
+          prev ? router.push(`${base}/${prev}${qs}`) : router.push(free ? "/" : "/dashboard")
         }
       >
         <ArrowLeft className="size-4" />

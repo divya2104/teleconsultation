@@ -22,6 +22,8 @@ export type AcuityDraft = {
  * tab closes; the backend `TriageRecord` replaces this in Step 6.
  */
 export type IntakeDraft = {
+  /** "eye-test" when the draft was made on the public free test (no booking yet). */
+  source?: "eye-test";
   answers: Answers;
   acuity?: AcuityDraft;
   /** JPEG data URLs by shot index (0 straight-on · 1 right eye · 2 left eye); "" = empty slot. */
@@ -57,6 +59,11 @@ export function writeDraft(patch: Partial<IntakeDraft>): boolean {
   } catch {
     return false; // storage unavailable — draft just won't persist across steps
   }
+}
+
+/** A free-test draft with at least the questionnaire done, waiting to be attached to a booking. */
+export function hasFreeTest(d: IntakeDraft): boolean {
+  return d.source === "eye-test" && Object.keys(d.answers ?? {}).length > 0;
 }
 
 export function clearDraft() {

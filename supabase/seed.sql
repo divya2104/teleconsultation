@@ -82,3 +82,15 @@ where not exists (
   select 1 from availability a
   where a.doctor_id = d.id and a.weekday = w.weekday and a.start_time = w.start_time
 );
+
+-- years of experience (column added in 20260914000001_doctor_experience.sql)
+update doctors set years_experience = v.y
+from (values
+  ('11111111-0000-4000-8000-000000000001'::uuid, 18),
+  ('11111111-0000-4000-8000-000000000002'::uuid, 12),
+  ('11111111-0000-4000-8000-000000000003'::uuid, 22),
+  ('11111111-0000-4000-8000-000000000004'::uuid, 9),
+  ('11111111-0000-4000-8000-000000000005'::uuid, 15),
+  ('11111111-0000-4000-8000-000000000006'::uuid, 7)
+) as v(id, y)
+where doctors.id = v.id;
